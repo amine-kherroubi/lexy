@@ -7,9 +7,9 @@ private:
 
 public:
   DFA() = default;
-  DFA(const std::vector<State> &states, StateID start_state_id)
-      : FA{states, start_state_id}, transitions(states.size()) {}
-
-  void addTransition(StateID from, char symbol, StateID to);
+  DFA(const std::vector<State> &states,
+      const std::vector<StateID> &accepting_state_ids, StateID start_state_id)
+      : FA{states, accepting_state_ids, start_state_id},
+        transitions(states.size()) {}
   StateID getNextState(StateID from, char symbol) const;
 };
