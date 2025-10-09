@@ -1,8 +1,67 @@
 #include "headers/RegexToNFA.h"
+#include <stack>
 
 StateID RegexToNFA::nextId = 0;
 
 void RegexToNFA::resetIds() { nextId = 0; }
+
+bool RegexToNFA::isOperator(char c) { return c == '|' || c == '.' || c == '*'; }
+
+bool RegexToNFA::isOperand(char c) {
+  return !isOperator(c) && c != '(' && c != ')';
+}
+
+int RegexToNFA::precedence(char op) {
+  switch (op) {
+  case '*':
+    return 3;
+  case '.':
+    return 2;
+  case '|':
+    return 1;
+  default:
+    return 0;
+  }
+}
+
+bool RegexToNFA::isLeftAssociative(char op) { return op != '*'; }
+
+std::vector<char> RegexToNFA::shuntingYard(const std::string &regex) {
+  std::vector<char> output;
+  std::stack<char> stack;
+
+  for (char c : regex) {
+    if (isOperand(c)) {
+      output.push_back(c);
+    } else if (isOperator(c)) {
+      while (
+          !stack.empty() && isOperator(stack.top()) &&
+          ((isLeftAssociative(c) && precedence(c) <= precedence(stack.top())) ||
+           (!isLeftAssociative(c) &&
+            precedence(c) < precedence(stack.top())))) {
+        output.push_back(stack.top());
+        stack.pop();
+      }
+      stack.push(c);
+    } else if (c == '(') {
+      stack.push(c);
+    } else if (c == ')') {
+      while (!stack.empty() && stack.top() != '(') {
+        output.push_back(stack.top());
+        stack.pop();
+      }
+      if (!stack.empty())
+        stack.pop();
+    }
+  }
+
+  while (!stack.empty()) {
+    output.push_back(stack.top());
+    stack.pop();
+  }
+
+  return output;
+}
 
 NFA RegexToNFA::buildForSymbol(Symbol c) {
   const StateID start_state_id{nextId++};
@@ -15,47 +74,4 @@ NFA RegexToNFA::buildForSymbol(Symbol c) {
   return nfa;
 }
 
-NFA RegexToNFA::concatenate(const NFA &left, const NFA &right) {
-  StateID offset = left.getStates().size();
-
-  States states = left.getStates();
-  for (auto &s : right.getStates()) {
-    states.emplace_back(s.getId() + offset);
-  }
-
-  StateIDs accepting;
-  for (auto id : right.getAcceptingStateIDs()) {
-    accepting.push_back(id + offset);
-  }
-
-  NFA result(states, accepting, left.getStartStateID());
-
-  for (StateID i = 0; i < left.getStates().size(); i++) {
-    for (Symbol c : left.getSymbols(i)) {
-      for (auto t : left.getNextStates(i, c)) {
-        result.addTransition(i, c, t);
-      }
-    }
-    for (auto eps : left.getEpsilonNextStates(i)) {
-      result.addEpsilonTransition(i, eps);
-    }
-  }
-
-  for (StateID i = 0; i < right.getStates().size(); i++) {
-    for (Symbol c : right.getSymbols(i)) {
-      for (auto t : right.getNextStates(i, c)) {
-        result.addTransition(i + offset, c, t + offset);
-      }
-    }
-    for (auto eps : right.getEpsilonNextStates(i)) {
-      result.addEpsilonTransition(i + offset, eps + offset);
-    }
-  }
-
-  StateID right_start = right.getStartStateID() + offset;
-  for (auto id : left.getAcceptingStateIDs()) {
-    result.addEpsilonTransition(id, right_start);
-  }
-
-  return result;
-}
+NFA RegexToNFA::concatenate(const NFA &left, const NFA &right) { return NFA(); }
