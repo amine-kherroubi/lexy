@@ -10,12 +10,12 @@ void NFA::addEpsilonTransition(StateID from, StateID to) {
 }
 
 const StateIDs &NFA::getNextStates(StateID from, Symbol symbol) const {
-  auto it = transitions[from].find(symbol);
-  if (it == transitions[from].end()) {
+  auto iterator = transitions[from].find(symbol);
+  if (iterator == transitions[from].end()) {
     static const StateIDs empty;
     return empty;
   }
-  return it->second;
+  return iterator->second;
 }
 
 const StateIDs &NFA::getEpsilonNextStates(StateID from) const {
