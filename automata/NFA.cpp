@@ -1,6 +1,5 @@
 #include "headers/NFA.h"
 #include <utility>
-#include <vector>
 
 void NFA::addTransition(StateID from, Symbol symbol, StateID to) {
   transitions[from][symbol].push_back(to);
