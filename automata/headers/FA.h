@@ -1,22 +1,23 @@
+#include "Alphabet.h"
 #include "State.h"
 #include <vector>
+using States = std::vector<State>;
+using StateIDs = std::vector<StateID>;
 
 class FA {
 protected:
-  std::vector<State> states;
-  std::vector<StateID> accepting_state_ids;
+  States states;
+  StateIDs accepting_state_ids;
   StateID start_state_id;
 
 public:
   FA() : start_state_id{-1} {}
-  FA(const std::vector<State> &states,
-     const std::vector<StateID> &accepting_state_ids, StateID start_state_id)
+  FA(const States &states, const StateIDs &accepting_state_ids,
+     StateID start_state_id)
       : states{states}, accepting_state_ids{accepting_state_ids},
         start_state_id{start_state_id} {}
-  const std::vector<State> &getStates() const { return states; };
-  const std::vector<StateID> &getAcceptingStateIDs() const {
-    return accepting_state_ids;
-  };
+  const States &getStates() const { return states; };
+  const StateIDs &getAcceptingStateIDs() const { return accepting_state_ids; };
   StateID getStartStateID() const { return start_state_id; };
   const State &getState(StateID id) const { return states.at(id); }
   bool isAccepting(StateID id) const {
@@ -26,5 +27,5 @@ public:
     }
     return false;
   }
-  virtual void addTransition(StateID from, char symbol, StateID to);
+  virtual void addTransition(StateID from, Symbol symbol, StateID to);
 };

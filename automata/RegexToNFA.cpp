@@ -5,12 +5,11 @@ StateID RegexToNFA::nextId = 0;
 
 void RegexToNFA::resetIds() { nextId = 0; }
 
-NFA RegexToNFA::buildForSymbol(char c) {
+NFA RegexToNFA::buildForSymbol(Symbol c) {
   const StateID start_state_id{nextId++};
   const StateID accept_state_id{nextId++};
-  const std::vector<State> states{State{start_state_id},
-                                  State{accept_state_id}};
-  const std::vector<StateID> accepting_state_ids{accept_state_id};
+  const States states{State{start_state_id}, State{accept_state_id}};
+  const StateIDs accepting_state_ids{accept_state_id};
 
   NFA nfa{states, accepting_state_ids, start_state_id};
   nfa.addTransition(start_state_id, c, accept_state_id);
@@ -22,13 +21,13 @@ NFA RegexToNFA::concatenate(const NFA &left, const NFA &right) {
   StateID offset = left.getStates().size();
 
   // build new state list
-  std::vector<State> states = left.getStates();
+  States states = left.getStates();
   for (auto &s : right.getStates()) {
     states.emplace_back(s.getId() + offset, s.isAccepting());
   }
 
   // new accepting states = right's accepting states + offset
-  std::vector<StateID> accepting;
+  StateIDs accepting;
   for (auto id : right.getAcceptingStateIDs()) {
     accepting.push_back(id + offset);
   }
@@ -38,7 +37,7 @@ NFA RegexToNFA::concatenate(const NFA &left, const NFA &right) {
 
   // copy transitions from left
   for (StateID i = 0; i < left.getStates().size(); i++) {
-    for (char c : left.getSymbols(i)) {
+    for (Symbol c : left.getSymbols(i)) {
       for (auto t : left.getNextStates(i, c)) {
         result.addTransition(i, c, t);
       }
@@ -50,7 +49,7 @@ NFA RegexToNFA::concatenate(const NFA &left, const NFA &right) {
 
   // copy transitions from right (offset)
   for (StateID i = 0; i < right.getStates().size(); i++) {
-    for (char c : right.getSymbols(i)) {
+    for (Symbol c : right.getSymbols(i)) {
       for (auto t : right.getNextStates(i, c)) {
         result.addTransition(i + offset, c, t + offset);
       }

@@ -8,7 +8,7 @@ public:
 
 private:
   static StateID nextId;
-  static NFA buildForSymbol(char c);
+  static NFA buildForSymbol(Symbol c);
   static NFA concatenate(const NFA &left, const NFA &right);
   static NFA alternate(const NFA &left, const NFA &right);
   static NFA kleeneStar(const NFA &nfa);

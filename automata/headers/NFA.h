@@ -1,20 +1,23 @@
 #include "FA.h"
 #include <unordered_map>
 #include <vector>
+using NondeterministicTransitions =
+    std::vector<std::unordered_map<Symbol, StateIDs>>;
 
 class NFA : public FA {
 private:
-  std::vector<std::unordered_map<char, std::vector<StateID>>> transitions;
-  std::vector<std::vector<StateID>> epsilon_transitions;
+  NondeterministicTransitions transitions;
+  StateIDs epsilon_transitions;
 
 public:
   NFA() = default;
-  NFA(const std::vector<State> &states,
-      const std::vector<StateID> &accepting_state_ids, StateID start_state_id)
+  NFA(const States &states, const StateIDs &accepting_state_ids,
+      StateID start_state_id)
       : FA{states, accepting_state_ids, start_state_id},
         transitions(states.size()), epsilon_transitions(states.size()) {}
   void addEpsilonTransition(StateID from, StateID to);
-  const std::vector<StateID> &getNextStates(StateID from, char symbol) const;
-  const std::vector<StateID> &getEpsilonNextStates(StateID from) const;
-  void addTransition(StateID from, char symbol, StateID to) override;
+  const StateIDs &getNextStates(StateID from, Symbol symbol) const;
+  const StateIDs &getEpsilonNextStates(StateID from) const;
+  void addTransition(StateID from, Symbol symbol, StateID to) override;
+  Symbols getSymbols(StateID from) const;
 };
