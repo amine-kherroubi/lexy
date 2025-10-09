@@ -1,3 +1,4 @@
+#pragma once
 #include "Alphabet.h"
 #include "State.h"
 #include <vector>

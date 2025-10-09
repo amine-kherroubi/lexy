@@ -1,3 +1,4 @@
+#pragma once
 #include "NFA.h"
 #include <string>
 
