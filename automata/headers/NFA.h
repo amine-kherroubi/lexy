@@ -3,11 +3,12 @@
 #include <vector>
 using NondeterministicTransitions =
     std::vector<std::unordered_map<Symbol, StateIDs>>;
+using EpsilonTransitions = std::vector<StateIDs>;
 
 class NFA : public FA {
 private:
   NondeterministicTransitions transitions;
-  StateIDs epsilon_transitions;
+  EpsilonTransitions epsilon_transitions;
 
 public:
   NFA() = default;

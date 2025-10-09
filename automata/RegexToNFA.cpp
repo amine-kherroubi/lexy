@@ -1,5 +1,4 @@
 #include "headers/RegexToNFA.h"
-#include <vector>
 
 StateID RegexToNFA::nextId = 0;
 
@@ -17,25 +16,20 @@ NFA RegexToNFA::buildForSymbol(Symbol c) {
 }
 
 NFA RegexToNFA::concatenate(const NFA &left, const NFA &right) {
-  // calculate offset for right's states
   StateID offset = left.getStates().size();
 
-  // build new state list
   States states = left.getStates();
   for (auto &s : right.getStates()) {
-    states.emplace_back(s.getId() + offset, s.isAccepting());
+    states.emplace_back(s.getId() + offset);
   }
 
-  // new accepting states = right's accepting states + offset
   StateIDs accepting;
   for (auto id : right.getAcceptingStateIDs()) {
     accepting.push_back(id + offset);
   }
 
-  // new NFA
   NFA result(states, accepting, left.getStartStateID());
 
-  // copy transitions from left
   for (StateID i = 0; i < left.getStates().size(); i++) {
     for (Symbol c : left.getSymbols(i)) {
       for (auto t : left.getNextStates(i, c)) {
@@ -47,7 +41,6 @@ NFA RegexToNFA::concatenate(const NFA &left, const NFA &right) {
     }
   }
 
-  // copy transitions from right (offset)
   for (StateID i = 0; i < right.getStates().size(); i++) {
     for (Symbol c : right.getSymbols(i)) {
       for (auto t : right.getNextStates(i, c)) {
@@ -59,7 +52,6 @@ NFA RegexToNFA::concatenate(const NFA &left, const NFA &right) {
     }
   }
 
-  // connect left accepting states to right start
   StateID right_start = right.getStartStateID() + offset;
   for (auto id : left.getAcceptingStateIDs()) {
     result.addEpsilonTransition(id, right_start);
