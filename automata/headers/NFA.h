@@ -16,4 +16,5 @@ public:
   void addEpsilonTransition(StateID from, StateID to);
   const std::vector<StateID> &getNextStates(StateID from, char symbol) const;
   const std::vector<StateID> &getEpsilonNextStates(StateID from) const;
+  void addTransition(StateID from, char symbol, StateID to) override;
 };

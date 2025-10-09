@@ -18,7 +18,53 @@ NFA RegexToNFA::buildForSymbol(char c) {
 }
 
 NFA RegexToNFA::concatenate(const NFA &left, const NFA &right) {
-  const std::vector<State> states{};
-  NFA nfa{states, accepting_state_ids, left.start_state_id};
-  nfa.addEpsilonTransition(start_state_id, left.)
+  // calculate offset for right's states
+  StateID offset = left.getStates().size();
+
+  // build new state list
+  std::vector<State> states = left.getStates();
+  for (auto &s : right.getStates()) {
+    states.emplace_back(s.getId() + offset, s.isAccepting());
+  }
+
+  // new accepting states = right's accepting states + offset
+  std::vector<StateID> accepting;
+  for (auto id : right.getAcceptingStateIDs()) {
+    accepting.push_back(id + offset);
+  }
+
+  // new NFA
+  NFA result(states, accepting, left.getStartStateID());
+
+  // copy transitions from left
+  for (StateID i = 0; i < left.getStates().size(); i++) {
+    for (char c : left.getSymbols(i)) {
+      for (auto t : left.getNextStates(i, c)) {
+        result.addTransition(i, c, t);
+      }
+    }
+    for (auto eps : left.getEpsilonNextStates(i)) {
+      result.addEpsilonTransition(i, eps);
+    }
+  }
+
+  // copy transitions from right (offset)
+  for (StateID i = 0; i < right.getStates().size(); i++) {
+    for (char c : right.getSymbols(i)) {
+      for (auto t : right.getNextStates(i, c)) {
+        result.addTransition(i + offset, c, t + offset);
+      }
+    }
+    for (auto eps : right.getEpsilonNextStates(i)) {
+      result.addEpsilonTransition(i + offset, eps + offset);
+    }
+  }
+
+  // connect left accepting states to right start
+  StateID right_start = right.getStartStateID() + offset;
+  for (auto id : left.getAcceptingStateIDs()) {
+    result.addEpsilonTransition(id, right_start);
+  }
+
+  return result;
 }
