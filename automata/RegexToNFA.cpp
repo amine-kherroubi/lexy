@@ -1,8 +1,4 @@
 #include "headers/RegexToNFA.h"
-#include "headers/Alphabet.h"
-#include "headers/FA.h"
-#include "headers/NFA.h"
-#include "headers/State.h"
 
 NFA RegexToNFA::buildForSymbol(Symbol c) {
   const States states{State{0}, State{1}};
@@ -13,134 +9,120 @@ NFA RegexToNFA::buildForSymbol(Symbol c) {
   return nfa;
 }
 
-NFA RegexToNFA::concatenate(NFA &first_nfa, NFA &second_nfa) {
-  States combined_states{first_nfa.getStates()};
-  int offset = combined_states.size();
+NFA &RegexToNFA::concatenate(NFA &first_nfa, NFA &second_nfa) {
+  int offset = first_nfa.getStates().size();
 
-  States second_nfa_states{second_nfa.getStates()};
+  // Offset second_nfa states and add them to first_nfa
+  States &second_nfa_states = second_nfa.getStates();
   for (State &state : second_nfa_states) {
     state.setID(offset + state.getID());
   }
-  combined_states.insert(combined_states.end(), second_nfa_states.begin(),
-                         second_nfa_states.end());
+  first_nfa.getStates().insert(first_nfa.getStates().end(),
+                               second_nfa_states.begin(),
+                               second_nfa_states.end());
 
-  StateIDs new_accepting_ids;
+  // Update accepting states to be only from second_nfa
+  StateIDs &new_accepting_ids = first_nfa.getAcceptingStateIDs();
+  StateIDs old_accepting_ids = new_accepting_ids; // Save old accepting states
+  new_accepting_ids.clear();
+
   for (StateID old_id : second_nfa.getAcceptingStateIDs()) {
     new_accepting_ids.push_back(offset + old_id);
   }
 
-  NFA resulting_nfa{combined_states, new_accepting_ids, 0};
-
-  for (const State &state : first_nfa.getStates()) {
-    StateID original_from{state.getID()};
-    StateID new_from{original_from};
-
-    for (Symbol symbol : first_nfa.getSymbols(original_from)) {
-      for (StateID to : first_nfa.getNextStates(original_from, symbol)) {
-        resulting_nfa.addTransition(new_from, symbol, to);
-      }
-    }
-    for (StateID to : first_nfa.getEpsilonNextStates(original_from)) {
-      resulting_nfa.addEpsilonTransition(new_from, to);
-    }
-  }
-
-  for (const State &state : second_nfa.getStates()) {
-    StateID original_from{state.getID()};
-    StateID new_from{offset + original_from};
+  // Copy transitions from second_nfa (with offset)
+  for (const State &state : second_nfa_states) {
+    StateID original_from = state.getID() - offset;
+    StateID new_from = state.getID();
 
     for (Symbol symbol : second_nfa.getSymbols(original_from)) {
       for (StateID to : second_nfa.getNextStates(original_from, symbol)) {
-        resulting_nfa.addTransition(new_from, symbol, offset + to);
+        first_nfa.addTransition(new_from, symbol, offset + to);
       }
     }
     for (StateID to : second_nfa.getEpsilonNextStates(original_from)) {
-      resulting_nfa.addEpsilonTransition(new_from, offset + to);
+      first_nfa.addEpsilonTransition(new_from, offset + to);
     }
   }
 
-  for (StateID accepting : first_nfa.getAcceptingStateIDs()) {
-    resulting_nfa.addEpsilonTransition(accepting,
-                                       offset + second_nfa.getStartStateID());
+  // Add epsilon transitions from old accepting states to second_nfa start
+  for (StateID accepting : old_accepting_ids) {
+    first_nfa.addEpsilonTransition(accepting,
+                                   offset + second_nfa.getStartStateID());
   }
 
-  return resulting_nfa;
+  return first_nfa;
 }
 
-NFA RegexToNFA::alternate(NFA &first_nfa, NFA &second_nfa) {
-  State start_state{0};
-  States combined_states{start_state};
+NFA &RegexToNFA::alternate(NFA &first_nfa, NFA &second_nfa) {
+  // Create new start state and add to first_nfa
+  State new_start{0};
 
-  States first_nfa_states{first_nfa.getStates()};
+  // Offset existing first_nfa states by 1
+  States &first_nfa_states = first_nfa.getStates();
   for (State &state : first_nfa_states) {
     state.setID(state.getID() + 1);
   }
-  combined_states.insert(combined_states.end(), first_nfa_states.begin(),
-                         first_nfa_states.end());
+  first_nfa_states.insert(first_nfa_states.begin(), new_start);
 
-  int offset = combined_states.size();
-  States second_nfa_states{second_nfa.getStates()};
+  // Calculate offset for second_nfa
+  int offset = first_nfa_states.size();
+
+  // Offset second_nfa states and add them to first_nfa
+  States &second_nfa_states = second_nfa.getStates();
   for (State &state : second_nfa_states) {
     state.setID(offset + state.getID());
   }
-  combined_states.insert(combined_states.end(), second_nfa_states.begin(),
-                         second_nfa_states.end());
+  first_nfa.getStates().insert(first_nfa.getStates().end(),
+                               second_nfa_states.begin(),
+                               second_nfa_states.end());
 
-  StateIDs new_accepting_ids;
-  for (StateID state_id : first_nfa.getAcceptingStateIDs()) {
-    new_accepting_ids.push_back(state_id + 1);
+  // Update accepting states: offset first_nfa's and add second_nfa's
+  StateIDs &new_accepting_ids = first_nfa.getAcceptingStateIDs();
+  for (StateID &state_id : new_accepting_ids) {
+    state_id += 1;
   }
-  for (StateID state_id : second_nfa.getAcceptingStateIDs()) {
-    new_accepting_ids.push_back(offset + state_id);
-  }
-
-  NFA resulting_nfa{combined_states, new_accepting_ids, 0};
-
-  resulting_nfa.addEpsilonTransition(0, first_nfa.getStartStateID() + 1);
-  resulting_nfa.addEpsilonTransition(0, offset + second_nfa.getStartStateID());
-
-  for (const State &state : first_nfa.getStates()) {
-    StateID original_from{state.getID()};
-    StateID new_from{original_from + 1};
-
-    for (Symbol symbol : first_nfa.getSymbols(original_from)) {
-      for (StateID to : first_nfa.getNextStates(original_from, symbol)) {
-        resulting_nfa.addTransition(new_from, symbol, to + 1);
-      }
-    }
-    for (StateID to : first_nfa.getEpsilonNextStates(original_from)) {
-      resulting_nfa.addEpsilonTransition(new_from, to + 1);
-    }
+  for (StateID old_id : second_nfa.getAcceptingStateIDs()) {
+    new_accepting_ids.push_back(offset + old_id);
   }
 
-  for (const State &state : second_nfa.getStates()) {
-    StateID original_from{state.getID()};
-    StateID new_from{offset + original_from};
+  // Update start state
+  StateID old_first_start = first_nfa.getStartStateID() + 1;
+  first_nfa.setStartStateID(0);
+
+  // Add epsilon transitions from new start state
+  first_nfa.addEpsilonTransition(0, old_first_start);
+  first_nfa.addEpsilonTransition(0, offset + second_nfa.getStartStateID());
+
+  // Copy transitions from second_nfa (with offset)
+  for (const State &state : second_nfa_states) {
+    StateID original_from = state.getID() - offset;
+    StateID new_from = state.getID();
 
     for (Symbol symbol : second_nfa.getSymbols(original_from)) {
       for (StateID to : second_nfa.getNextStates(original_from, symbol)) {
-        resulting_nfa.addTransition(new_from, symbol, offset + to);
+        first_nfa.addTransition(new_from, symbol, offset + to);
       }
     }
     for (StateID to : second_nfa.getEpsilonNextStates(original_from)) {
-      resulting_nfa.addEpsilonTransition(new_from, offset + to);
+      first_nfa.addEpsilonTransition(new_from, offset + to);
     }
   }
 
-  return resulting_nfa;
+  return first_nfa;
 }
 
-NFA RegexToNFA::kleeneStar(NFA &nfa) {
-  StateIDs new_accepting_ids{nfa.getStartStateID()};
-  for (StateID state_id : nfa.getAcceptingStateIDs()) {
-    new_accepting_ids.push_back(state_id);
+NFA &RegexToNFA::kleeneStar(NFA &nfa) {
+  StateID start_state_id = nfa.getStartStateID();
+
+  // Add start state to accepting states
+  StateIDs &accepting_ids = nfa.getAcceptingStateIDs();
+  accepting_ids.insert(accepting_ids.begin(), start_state_id);
+
+  // Add epsilon transitions from accepting states back to start
+  for (size_t i = 1; i < accepting_ids.size(); i++) {
+    nfa.addEpsilonTransition(accepting_ids[i], start_state_id);
   }
 
-  NFA resulting_nfa{nfa.getStates(), new_accepting_ids, 0};
-
-  for (StateID state_id : nfa.getAcceptingStateIDs()) {
-    resulting_nfa.addEpsilonTransition(state_id, 0);
-  }
-
-  return resulting_nfa;
+  return nfa;
 }

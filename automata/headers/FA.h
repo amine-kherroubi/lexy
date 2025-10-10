@@ -37,5 +37,6 @@ public:
     }
     return false;
   }
+
   virtual void addTransition(StateID from, Symbol symbol, StateID to);
 };
