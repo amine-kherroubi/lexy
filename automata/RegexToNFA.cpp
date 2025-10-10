@@ -76,6 +76,8 @@ NFA &RegexToNFA::alternate(NFA &first_nfa, NFA &second_nfa) {
   const Alphabet &second_alphabet = second_nfa.getAlphabet();
   first_alphabet.insert(second_alphabet.begin(), second_alphabet.end());
 
+  size_t old_first_size = first_nfa.getStates().size();
+
   // Create new start state
   State new_start{0};
 
@@ -100,8 +102,42 @@ NFA &RegexToNFA::alternate(NFA &first_nfa, NFA &second_nfa) {
                                second_nfa_states.begin(),
                                second_nfa_states.end());
 
+  // Resize and shift transitions
+  NondeterministicTransitions old_transitions(old_first_size);
+  EpsilonTransitions old_epsilon(old_first_size);
+
+  // Copy old transitions
+  for (size_t i = 0; i < old_first_size; i++) {
+    StateID old_from = i;
+
+    // Copy regular transitions
+    for (Symbol symbol : first_nfa.getSymbols(old_from)) {
+      old_transitions[i][symbol] = first_nfa.getNextStateIDs(old_from, symbol);
+    }
+
+    // Copy epsilon transitions
+    old_epsilon[i] = first_nfa.getEpsilonNextStatesIDs(old_from);
+  }
+
   // Resize transition table
   first_nfa.resizeTransitions(first_nfa.getStates().size());
+
+  // Re-add old transitions with shifted state IDs
+  for (size_t i = 0; i < old_first_size; i++) {
+    StateID new_from = i + 1; // Shifted by 1
+
+    // Add regular transitions
+    for (const auto &[symbol, targets] : old_transitions[i]) {
+      for (StateID old_to : targets) {
+        first_nfa.addTransition(new_from, symbol, old_to + 1);
+      }
+    }
+
+    // Add epsilon transitions
+    for (StateID old_to : old_epsilon[i]) {
+      first_nfa.addEpsilonTransition(new_from, old_to + 1);
+    }
+  }
 
   // Update accepting states from first NFA (shifted by 1)
   StateIDs &accepting_ids = first_nfa.getAcceptingStateIDs();
@@ -120,10 +156,6 @@ NFA &RegexToNFA::alternate(NFA &first_nfa, NFA &second_nfa) {
   first_nfa.setStartStateID(0);
   first_nfa.addEpsilonTransition(0, old_first_start);
   first_nfa.addEpsilonTransition(0, second_start);
-
-  // Copy transitions from first NFA (already in place, just shifted)
-  NondeterministicTransitions temp_transitions(1);
-  EpsilonTransitions temp_epsilon(1);
 
   // Copy transitions from second NFA with id_offset
   for (size_t i = 0; i < second_nfa.getStates().size(); i++) {
