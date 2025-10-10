@@ -1,16 +1,17 @@
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -I.
+CXXFLAGS = -std=c++17 -Wall -I.
 
-SRCS = main.cpp automata/NFA.cpp automata/DFA.cpp automata/RegexPreprocessor.cpp automata/RegexToNFA.cpp automata/NFADeterminizer.cpp
+SRCS = main.cpp automata/NFA.cpp automata/DFA.cpp automata/RegexPreprocessor.cpp automata/RegexToNFA.cpp automata/NFADeterminizer.cpp automata/DFAMinimizer.cpp
 OBJS = $(SRCS:.cpp=.o)
 TARGET = test
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(OBJS) $(TARGET)
-
-.PHONY: all clean
