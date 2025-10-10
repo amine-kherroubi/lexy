@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../../global/types.h"
-#include <string>
 
 class RegexPreprocessor {
 public:
@@ -10,6 +9,7 @@ public:
 private:
   static String addConcatenationOperators(const String &regex);
   static String shuntingYard(const String &regex);
+
   static bool isOperator(char c);
   static bool isOperand(char c);
   static int precedence(char op);

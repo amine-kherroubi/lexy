@@ -5,5 +5,5 @@
 
 class DFADeterminizer {
 public:
-  static DFA minimize(DFA &dfa) { return DFA(); }
+  static DFA minimize(DFA &dfa) {}
 };

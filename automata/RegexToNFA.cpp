@@ -1,11 +1,12 @@
 #include "headers/RegexToNFA.h"
+#include "headers/RegexPreprocessor.h"
 #include <memory>
 #include <stack>
 
 NFA RegexToNFA::buildForSymbol(Symbol c) {
   const States states{State{0}, State{1}};
   const StateIDs accepting_state_ids{1};
-  NFA nfa{states, accepting_state_ids, 0};
+  NFA nfa(Alphabet{c}, states, accepting_state_ids, 0);
   nfa.addTransition(0, c, 1);
   return nfa;
 }

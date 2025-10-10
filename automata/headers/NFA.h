@@ -2,8 +2,6 @@
 
 #include "../../global/types.h"
 #include "FA.h"
-#include <unordered_map>
-#include <vector>
 
 class NFA : public FA {
 private:
@@ -11,15 +9,16 @@ private:
   EpsilonTransitions epsilon_transitions;
 
 public:
-  NFA() = default;
-  NFA(const States &states, const StateIDs &accepting_state_ids,
-      StateID start_state_id)
-      : FA{states, accepting_state_ids, start_state_id},
+  NFA(const Alphabet &alphabet, const States &states,
+      const StateIDs &accepting_state_ids, StateID start_state_id)
+      : FA(alphabet, states, accepting_state_ids, start_state_id),
         transitions(states.size()), epsilon_transitions(states.size()) {}
-  void addEpsilonTransition(StateID from, StateID to);
-  const StateIDs &getNextStates(StateID from, Symbol symbol) const;
-  const StateIDs &getEpsilonNextStates(StateID from) const;
+
   void addTransition(StateID from, Symbol symbol, StateID to);
-  Symbols getSymbols(StateID from) const;
+  void addEpsilonTransition(StateID from, StateID to);
   void resizeTransitions(size_t new_size);
+
+  StateIDs getNextStates(StateID from, Symbol symbol) const;
+  StateIDs getEpsilonNextStates(StateID from) const;
+  Symbols getSymbols(StateID from) const;
 };

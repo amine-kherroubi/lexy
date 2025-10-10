@@ -2,8 +2,6 @@
 
 #include "../../global/types.h"
 #include "NFA.h"
-#include "RegexPreprocessor.h"
-#include <string>
 
 class RegexToNFA {
 public:
