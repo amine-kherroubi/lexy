@@ -1,192 +1,111 @@
 #include "headers/NFADeterminizer.h"
+#include "headers/RegexPreprocessor.h"
 #include <map>
 #include <queue>
 
-Closure NFADeterminizer::epsilonClosure(const NFA &nfa, StateID state) {
+Closure NFADeterminizer::epsilonClosure(NFA &nfa, StateID state_id) {
   Closure closure;
-  std::queue<StateID> states_to_process;
-  closure.insert(state);
-  states_to_process.push(state);
-  while (!states_to_process.empty()) {
-    StateID current = states_to_process.front();
-    states_to_process.pop();
+  std::queue<StateID> state_ids_to_process;
+  closure.insert(state_id);
+  state_ids_to_process.push(state_id);
+  while (!state_ids_to_process.empty()) {
+    StateID current_state_id = state_ids_to_process.front();
+    state_ids_to_process.pop();
     const StateIDs &epsilon_reachable_states =
-        nfa.getEpsilonNextStates(current);
-    for (StateID next_state : epsilon_reachable_states) {
-      if (closure.find(next_state) == closure.end()) {
-        closure.insert(next_state);
-        states_to_process.push(next_state);
+        nfa.getEpsilonNextStatesIDs(current_state_id);
+    for (StateID next_state_id : epsilon_reachable_states) {
+      if (closure.find(next_state_id) == closure.end()) {
+        closure.insert(next_state_id);
+        state_ids_to_process.push(next_state_id);
       }
     }
   }
   return closure;
 }
 
-Closure NFADeterminizer::epsilonClosure(const NFA &nfa,
-                                        const Superstate &superstate) {
+Closure NFADeterminizer::epsilonClosure(NFA &nfa, Superstate &superstate) {
   Closure closure;
-  for (StateID state : superstate) {
-    Closure subclosure = epsilonClosure(nfa, state);
+  for (StateID state_id : superstate) {
+    Closure subclosure = epsilonClosure(nfa, state_id);
     closure.insert(subclosure.begin(), subclosure.end());
   }
   return closure;
 }
 
-Alphabet NFADeterminizer::collectAlphabet(const NFA &nfa) {
-  Alphabet alphabet;
-  for (const State &state : nfa.getStates()) {
-    Symbols symbols = nfa.getSymbols(state.getID());
-    alphabet.insert(symbols.begin(), symbols.end());
-  }
-  return alphabet;
-}
-
-/**
- * @brief Computes the move operation: states reachable from a set via a symbol
- *
- * The move operation answers: "If I'm in any of these states and I read this
- * symbol, what states could I end up in (including epsilon transitions)?"
- *
- * Process:
- * 1. For each state in the input set
- * 2. Find all states directly reachable via the given symbol
- * 3. Compute epsilon closure of those states
- *
- * @param nfa The NFA to operate on
- * @param states Set of current states
- * @param symbol The input symbol
- * @return Set of states reachable via symbol (with epsilon closure)
- */
-Superstate NFADeterminizer::move(const NFA &nfa, const Superstate &states,
+Superstate NFADeterminizer::move(NFA &nfa, Superstate &superstate,
                                  Symbol symbol) {
   Superstate result;
-
-  // For each state in our current set
-  for (StateID state : states) {
-    // Get all states reachable via the symbol
-    const StateIDs &next_states = nfa.getNextStates(state, symbol);
+  for (StateID state_id : superstate) {
+    const StateIDs &next_states = nfa.getNextStateIDs(state_id, symbol);
     result.insert(next_states.begin(), next_states.end());
   }
-
-  // Apply epsilon closure to include epsilon-reachable states
   return epsilonClosure(nfa, result);
 }
 
-/**
- * @brief Checks if a set of NFA states contains at least one accepting state
- *
- * In DFA construction, a DFA state (which represents a set of NFA states)
- * is accepting if ANY of the NFA states in that set is accepting.
- *
- * @param nfa The NFA to check against
- * @param states Set of NFA state IDs
- * @return true if at least one state is accepting, false otherwise
- */
-bool NFADeterminizer::containsAcceptingState(const NFA &nfa,
-                                             const Superstate &states) {
-  for (StateID state : states) {
-    if (nfa.isAccepting(state)) {
+bool NFADeterminizer::containsAcceptingState(NFA &nfa, Superstate &superstate) {
+  for (StateID state_id : superstate) {
+    if (nfa.isAccepting(state_id)) {
       return true;
     }
   }
   return false;
 }
 
-/**
- * @brief Converts an NFA to a DFA using subset construction
- *
- * Algorithm (Subset Construction):
- * 1. Start with epsilon closure of NFA start state as DFA start state
- * 2. For each unmarked DFA state (set of NFA states):
- *    a. Mark it as processed
- *    b. For each symbol in the alphabet:
- *       - Compute move(current_set, symbol) = next_set
- *       - If next_set is new, add it as a new DFA state
- *       - Add transition: current_dfa_state --symbol--> next_dfa_state
- * 3. A DFA state is accepting if it contains any NFA accepting state
- *
- * Time Complexity: O(2^n * |alphabet|) in worst case, where n = number of NFA
- * states Space Complexity: O(2^n) for storing DFA states
- *
- * @param nfa The NFA to convert
- * @return Equivalent DFA
- */
-DFA NFADeterminizer::determinize(const NFA &nfa) {
-  // Step 1: Collect the alphabet (all symbols used in NFA)
-  std::set<Symbol> alphabet = collectAlphabet(nfa);
+DFA NFADeterminizer::determinize(NFA &nfa) {
+  Superstate start_superstate = epsilonClosure(nfa, nfa.getStartStateID());
+  std::map<Superstate, StateID> superstate_to_state_id_map;
+  std::queue<Superstate> superstates_to_process;
 
-  // Step 2: Compute starting DFA state (epsilon closure of NFA start state)
-  Superstate start_set = epsilonClosure(nfa, nfa.getStartStateID());
-
-  // Maps: NFA state set -> DFA state ID
-  // This tracks which DFA state corresponds to which set of NFA states
-  std::map<Superstate, StateID> state_map;
-
-  // Queue of DFA states (as NFA state sets) that need processing
-  std::queue<Superstate> unmarked_states;
-
-  // DFA construction data
   States dfa_states;
-  StateIDs accepting_state_ids;
+  StateIDs dfa_accepting_state_ids;
 
-  // Initialize DFA with start state (ID = 0)
-  state_map[start_set] = 0;
-  dfa_states.push_back(State{0});
-  unmarked_states.push(start_set);
+  superstate_to_state_id_map[start_superstate] = 0;
+  dfa_states.push_back(State(0));
+  superstates_to_process.push(start_superstate);
 
-  // Check if start state should be accepting
-  if (containsAcceptingState(nfa, start_set)) {
-    accepting_state_ids.push_back(0);
+  if (containsAcceptingState(nfa, start_superstate)) {
+    dfa_accepting_state_ids.push_back(0);
   }
 
-  // Step 3: Create DFA object and prepare transition table
-  DFA dfa{dfa_states, accepting_state_ids, 0};
-  dfa.resizeTransitions(1); // Start with one state
+  Alphabet alphabet = nfa.getAlphabet();
 
-  // Step 4: Process all unmarked states (Subset Construction main loop)
-  while (!unmarked_states.empty()) {
-    // Get next unmarked state to process
-    Superstate current_set = unmarked_states.front();
-    unmarked_states.pop();
+  DFA dfa(alphabet, dfa_states, dfa_accepting_state_ids, 0);
+  dfa.resizeTransitions(1);
 
-    StateID current_dfa_state = state_map[current_set];
+  while (!superstates_to_process.empty()) {
+    Superstate current_superstate = superstates_to_process.front();
+    superstates_to_process.pop();
 
-    // For each symbol in the alphabet, compute transitions
+    StateID current_dfa_state = superstate_to_state_id_map[current_superstate];
+
     for (Symbol symbol : alphabet) {
-      // Compute: where do we go from current_set on symbol?
-      Superstate next_set = move(nfa, current_set, symbol);
+      Superstate next_superstate = move(nfa, current_superstate, symbol);
 
-      // Skip if no transition exists (dead end)
-      if (next_set.empty()) {
+      if (next_superstate.empty()) {
         continue;
       }
 
-      // Check if this state set is new (not yet in DFA)
-      if (state_map.find(next_set) == state_map.end()) {
-        // Create new DFA state
+      if (superstate_to_state_id_map.find(next_superstate) ==
+          superstate_to_state_id_map.end()) {
         StateID new_id = dfa_states.size();
-        state_map[next_set] = new_id;
+        superstate_to_state_id_map[next_superstate] = new_id;
         dfa_states.push_back(State{new_id});
-        unmarked_states.push(next_set);
+        superstates_to_process.push(next_superstate);
 
-        // Check if this new state should be accepting
-        if (containsAcceptingState(nfa, next_set)) {
-          accepting_state_ids.push_back(new_id);
+        if (containsAcceptingState(nfa, next_superstate)) {
+          dfa_accepting_state_ids.push_back(new_id);
         }
 
-        // Expand transition table for new state
         dfa.resizeTransitions(dfa_states.size());
       }
 
-      // Add transition: current_dfa_state --symbol--> next_dfa_state
-      StateID next_dfa_state = state_map[next_set];
+      StateID next_dfa_state = superstate_to_state_id_map[next_superstate];
       dfa.addTransition(current_dfa_state, symbol, next_dfa_state);
     }
   }
 
-  // Step 5: Update DFA with final states and accepting states
   dfa.getStates() = dfa_states;
-  dfa.getAcceptingStateIDs() = accepting_state_ids;
+  dfa.getAcceptingStateIDs() = dfa_accepting_state_ids;
 
   return dfa;
 }

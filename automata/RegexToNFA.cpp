@@ -12,6 +12,9 @@ NFA RegexToNFA::buildForSymbol(Symbol c) {
 }
 
 NFA &RegexToNFA::concatenate(NFA &first_nfa, NFA &second_nfa) {
+  Alphabet &first_alphabet = first_nfa.getAlphabet();
+  const Alphabet &second_alphabet = second_nfa.getAlphabet();
+  first_alphabet.insert(second_alphabet.begin(), second_alphabet.end());
   int offset = first_nfa.getStates().size();
   States &second_nfa_states = second_nfa.getStates();
   for (State &state : second_nfa_states) {
@@ -31,11 +34,11 @@ NFA &RegexToNFA::concatenate(NFA &first_nfa, NFA &second_nfa) {
     StateID new_from = state.getID();
     StateID original_from = new_from - offset;
     for (Symbol symbol : second_nfa.getSymbols(original_from)) {
-      for (StateID to : second_nfa.getNextStates(original_from, symbol)) {
+      for (StateID to : second_nfa.getNextStateIDs(original_from, symbol)) {
         first_nfa.addTransition(new_from, symbol, offset + to);
       }
     }
-    for (StateID to : second_nfa.getEpsilonNextStates(original_from)) {
+    for (StateID to : second_nfa.getEpsilonNextStatesIDs(original_from)) {
       first_nfa.addEpsilonTransition(new_from, offset + to);
     }
   }
@@ -47,6 +50,9 @@ NFA &RegexToNFA::concatenate(NFA &first_nfa, NFA &second_nfa) {
 }
 
 NFA &RegexToNFA::alternate(NFA &first_nfa, NFA &second_nfa) {
+  Alphabet &first_alphabet = first_nfa.getAlphabet();
+  const Alphabet &second_alphabet = second_nfa.getAlphabet();
+  first_alphabet.insert(second_alphabet.begin(), second_alphabet.end());
   State new_start{0};
   States &first_nfa_states = first_nfa.getStates();
   for (State &state : first_nfa_states) {
@@ -77,11 +83,11 @@ NFA &RegexToNFA::alternate(NFA &first_nfa, NFA &second_nfa) {
     StateID new_from = state.getID();
     StateID original_from = new_from - offset;
     for (Symbol symbol : second_nfa.getSymbols(original_from)) {
-      for (StateID to : second_nfa.getNextStates(original_from, symbol)) {
+      for (StateID to : second_nfa.getNextStateIDs(original_from, symbol)) {
         first_nfa.addTransition(new_from, symbol, offset + to);
       }
     }
-    for (StateID to : second_nfa.getEpsilonNextStates(original_from)) {
+    for (StateID to : second_nfa.getEpsilonNextStatesIDs(original_from)) {
       first_nfa.addEpsilonTransition(new_from, offset + to);
     }
   }

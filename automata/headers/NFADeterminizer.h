@@ -6,15 +6,13 @@
 
 class NFADeterminizer {
 public:
-  static DFA determinize(const NFA &nfa);
+  static DFA determinize(NFA &nfa);
 
 private:
-  static Closure epsilonClosure(const NFA &nfa, StateID state);
-  static Closure epsilonClosure(const NFA &nfa, const Superstate &superstate);
+  static Closure epsilonClosure(NFA &nfa, StateID state);
+  static Closure epsilonClosure(NFA &nfa, Superstate &superstate);
 
-  static Superstate move(const NFA &nfa, const Superstate &superstate,
-                         Symbol symbol);
+  static Superstate move(NFA &nfa, Superstate &superstate, Symbol symbol);
 
-  static bool containsAcceptingState(const NFA &nfa,
-                                     const Superstate &superstate);
+  static bool containsAcceptingState(NFA &nfa, Superstate &superstate);
 };

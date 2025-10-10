@@ -18,7 +18,7 @@ public:
   void addEpsilonTransition(StateID from, StateID to);
   void resizeTransitions(size_t new_size);
 
-  StateIDs getNextStates(StateID from, Symbol symbol) const;
-  StateIDs getEpsilonNextStates(StateID from) const;
+  StateIDs getNextStateIDs(StateID from, Symbol symbol) const;
+  StateIDs getEpsilonNextStatesIDs(StateID from) const;
   Symbols getSymbols(StateID from) const;
 };
