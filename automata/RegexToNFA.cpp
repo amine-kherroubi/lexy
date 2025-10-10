@@ -23,6 +23,9 @@ NFA &RegexToNFA::concatenate(NFA &first_nfa, NFA &second_nfa) {
                                second_nfa_states.begin(),
                                second_nfa_states.end());
 
+  // Resize transition data structures
+  first_nfa.resizeTransitions(first_nfa.getStates().size());
+
   // Update accepting states to be only from second_nfa
   StateIDs &new_accepting_ids = first_nfa.getAcceptingStateIDs();
   StateIDs old_accepting_ids = new_accepting_ids; // Save old accepting states
@@ -78,6 +81,9 @@ NFA &RegexToNFA::alternate(NFA &first_nfa, NFA &second_nfa) {
   first_nfa.getStates().insert(first_nfa.getStates().end(),
                                second_nfa_states.begin(),
                                second_nfa_states.end());
+
+  // Resize transition data structures
+  first_nfa.resizeTransitions(first_nfa.getStates().size());
 
   // Update accepting states: offset first_nfa's and add second_nfa's
   StateIDs &new_accepting_ids = first_nfa.getAcceptingStateIDs();

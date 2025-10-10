@@ -1,5 +1,4 @@
 #include "headers/NFA.h"
-#include <utility>
 
 void NFA::addTransition(StateID from, Symbol symbol, StateID to) {
   transitions[from][symbol].push_back(to);
@@ -28,4 +27,9 @@ Symbols NFA::getSymbols(StateID from) const {
     symbols.push_back(pair.first);
   }
   return symbols;
+}
+
+void NFA::resizeTransitions(size_t new_size) {
+  transitions.resize(new_size);
+  epsilon_transitions.resize(new_size);
 }

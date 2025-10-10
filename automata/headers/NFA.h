@@ -22,4 +22,5 @@ public:
   const StateIDs &getEpsilonNextStates(StateID from) const;
   void addTransition(StateID from, Symbol symbol, StateID to);
   Symbols getSymbols(StateID from) const;
+  void resizeTransitions(size_t new_size);
 };

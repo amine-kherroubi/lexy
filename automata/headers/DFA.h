@@ -16,4 +16,5 @@ public:
         transitions(states.size()) {}
   StateID getNextState(StateID from, Symbol symbol) const;
   void addTransition(StateID from, Symbol symbol, StateID to);
+  void resizeTransitions(size_t new_size);
 };
