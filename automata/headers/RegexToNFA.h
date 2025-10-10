@@ -5,11 +5,8 @@
 class RegexToNFA {
 public:
   static NFA convert(const std::string &regex);
-  static void resetIDs();
 
 private:
-  static StateID nextID;
-
   static NFA buildForSymbol(Symbol c);
   static NFA concatenate(const NFA &left, const NFA &right);
   static NFA alternate(const NFA &left, const NFA &right);

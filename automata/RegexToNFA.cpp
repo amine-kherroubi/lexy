@@ -1,13 +1,9 @@
 #include "headers/RegexToNFA.h"
-
-StateID RegexToNFA::nextID = 0;
-
-void RegexToNFA::resetIDs() { nextID = 0; }
+#include <cstddef>
 
 NFA RegexToNFA::buildForSymbol(Symbol c) {
-  resetIDs();
-  const StateID start_state_id{nextID++};
-  const StateID accept_state_id{nextID++};
+  const StateID start_state_id{0};
+  const StateID accept_state_id{1};
   const States states{State{start_state_id}, State{accept_state_id}};
   const StateIDs accepting_state_ids{accept_state_id};
 
@@ -17,18 +13,25 @@ NFA RegexToNFA::buildForSymbol(Symbol c) {
 }
 
 NFA RegexToNFA::concatenate(const NFA &left, const NFA &right) {
-  resetIDs();
   States combined_states{left.getStates()};
-  int offset = combined_states.length();
-  States right_states{};
-  for (State &state : right.getStates()) {
-    state.setID(offset + nextID++);
+  size_t left_size{combined_states.size()};
+
+  States right_states{right.getStates()};
+  for (State &state : right_states) {
+    StateID old_id = state.getID();
+    StateID new_id = left_size + old_id;
+    state.setID(new_id);
   }
+
   combined_states.insert(combined_states.end(), right_states.begin(),
                          right_states.end());
 
-  NFA nfa{combined_states, right.getAcceptingStateIDs(),
-          left.getStartStateID()};
+  StateIDs new_accepting_ids;
+  for (StateID old_id : right.getAcceptingStateIDs()) {
+    new_accepting_ids.push_back(left_size + old_id);
+  }
+
+  NFA nfa{combined_states, new_accepting_ids, left.getStartStateID()};
 
   for (const State &state : left.getStates()) {
     StateID from{state.getID()};
@@ -44,18 +47,20 @@ NFA RegexToNFA::concatenate(const NFA &left, const NFA &right) {
 
   for (const State &state : right.getStates()) {
     StateID from{state.getID()};
-    for (Symbol symbol : right.getSymbols(from)) {
-      for (StateID to : right.getNextStates(from, symbol)) {
-        nfa.addTransition(from, symbol, to);
+    StateID original_from{from - (int)left_size};
+
+    for (Symbol symbol : right.getSymbols(original_from)) {
+      for (StateID to : right.getNextStates(original_from, symbol)) {
+        nfa.addTransition(from, symbol, left_size + to);
       }
     }
-    for (StateID to : right.getEpsilonNextStates(from)) {
-      nfa.addEpsilonTransition(from, to);
+    for (StateID to : right.getEpsilonNextStates(original_from)) {
+      nfa.addEpsilonTransition(from, left_size + to);
     }
   }
 
   for (StateID accepting : left.getAcceptingStateIDs()) {
-    nfa.addEpsilonTransition(accepting, right.getStartStateID());
+    nfa.addEpsilonTransition(accepting, left_size + right.getStartStateID());
   }
 
   return nfa;
