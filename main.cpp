@@ -1,11 +1,9 @@
-#include "automata/headers/NFA.h"
+#include "automata/headers/NFADeterminizer.h"
 #include "automata/headers/RegexToNFA.h"
-#include <iostream>
 
 int main() {
-  String regex{"((a|b)*c|(ab*c))*"};
-  std::cout << "Building NFA for " << regex << std::endl;
-  NFA nfa5 = RegexToNFA::convert(regex);
-  std::cout << "Number of states: " << nfa5.getStates().size() << std::endl;
+  String regex = "((a|b)*c|(ab*c))*";
+  NFA nfa = RegexToNFA::convert(regex);
+  DFA dfa = NFADeterminizer::determinize(nfa);
   return 0;
 }
