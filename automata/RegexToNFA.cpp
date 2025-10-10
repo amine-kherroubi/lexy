@@ -130,13 +130,11 @@ NFA &RegexToNFA::kleeneStar(NFA &nfa) {
 }
 
 NFA RegexToNFA::convert(const std::string &regex) {
-  std::vector<char> rpn = RegexPreprocessor::convertToRPN(regex);
+  std::string preprocessed_regex = RegexPreprocessor::preprocess(regex);
   std::stack<NFA *> nfa_stack;
 
-  for (char c : rpn) {
-    if (RegexPreprocessor::isOperand(c)) {
-      nfa_stack.push(new NFA(buildForSymbol(c)));
-    } else if (c == '.') {
+  for (char c : preprocessed_regex) {
+    if (c == '.') {
       NFA *second = nfa_stack.top();
       nfa_stack.pop();
       NFA *first = nfa_stack.top();
@@ -157,6 +155,8 @@ NFA RegexToNFA::convert(const std::string &regex) {
       nfa_stack.pop();
       kleeneStar(*nfa);
       nfa_stack.push(nfa);
+    } else {
+      nfa_stack.push(new NFA(buildForSymbol(c)));
     }
   }
 
