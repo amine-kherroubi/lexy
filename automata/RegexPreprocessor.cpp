@@ -47,7 +47,7 @@ RegexPreprocessor::addConcatenationOperators(const std::string &regex) {
   return result;
 }
 
-std::string RegexPreprocessor::convertToRPN(const std::string &regex) {
+std::string RegexPreprocessor::shuntingYard(const std::string &regex) {
   std::string output;
   std::stack<char> stack;
 
@@ -85,5 +85,5 @@ std::string RegexPreprocessor::convertToRPN(const std::string &regex) {
 }
 
 std::string RegexPreprocessor::preprocess(const std::string &regex) {
-  return convertToRPN(addConcatenationOperators(regex));
+  return shuntingYard(addConcatenationOperators(regex));
 }

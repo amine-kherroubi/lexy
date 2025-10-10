@@ -7,7 +7,7 @@ public:
 
 private:
   static std::string addConcatenationOperators(const std::string &regex);
-  static std::string convertToRPN(const std::string &regex);
+  static std::string shuntingYard(const std::string &regex);
 
   // Helper functions
   static bool isOperator(char c);
