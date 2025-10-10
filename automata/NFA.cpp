@@ -14,22 +14,32 @@ void NFA::resizeTransitions(size_t new_size) {
 }
 
 StateIDs NFA::getNextStateIDs(StateID from, Symbol symbol) const {
-  auto iterator = transitions[from].find(symbol);
-  if (iterator == transitions[from].end()) {
-    static const StateIDs empty;
-    return empty;
+  if (from < 0 || from >= static_cast<int>(transitions.size())) {
+    return StateIDs();
   }
-  return iterator->second;
+
+  auto it = transitions[from].find(symbol);
+  if (it == transitions[from].end()) {
+    return StateIDs();
+  }
+  return it->second;
 }
 
 StateIDs NFA::getEpsilonNextStatesIDs(StateID from) const {
+  if (from < 0 || from >= static_cast<int>(epsilon_transitions.size())) {
+    return StateIDs();
+  }
   return epsilon_transitions[from];
 }
 
 Symbols NFA::getSymbols(StateID from) const {
   Symbols symbols;
-  for (const std::pair<Symbol, StateIDs> &pair : transitions[from]) {
-    symbols.push_back(pair.first);
+  if (from < 0 || from >= static_cast<int>(transitions.size())) {
+    return symbols;
+  }
+
+  for (const auto &[symbol, state_ids] : transitions[from]) {
+    symbols.push_back(symbol);
   }
   return symbols;
 }

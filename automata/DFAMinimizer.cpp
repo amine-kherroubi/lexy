@@ -53,6 +53,11 @@ DFA DFAMinimizer::minimize(DFA &dfa) {
       for (StateID state_id : current_superstate) {
         StateID next_state = dfa.getNextState(state_id, symbol);
 
+        // Skip if no transition exists
+        if (next_state == -1) {
+          continue;
+        }
+
         // Find which superstate contains next_state
         for (const auto &[target_superstate, target_id] :
              superstate_to_state_id_map) {
@@ -80,6 +85,17 @@ DFA DFAMinimizer::minimize(DFA &dfa) {
     }
   }
 
+  // Find the new initial state
+  StateID old_initial = dfa.getStartStateID();
+  StateID new_initial = 0;
+
+  for (const auto &[superstate, new_state_id] : superstate_to_state_id_map) {
+    if (superstate.find(old_initial) != superstate.end()) {
+      new_initial = new_state_id;
+      break;
+    }
+  }
+
   // Build minimized DFA
   States minimized_states;
   StateIDs minimized_accepting_ids;
@@ -96,7 +112,8 @@ DFA DFAMinimizer::minimize(DFA &dfa) {
     }
   }
 
-  DFA minimized_dfa{alphabet, minimized_states, minimized_accepting_ids, 0};
+  DFA minimized_dfa{alphabet, minimized_states, minimized_accepting_ids,
+                    new_initial};
   minimized_dfa.resizeTransitions(superstate_to_state_id_map.size());
 
   // Build transitions
@@ -105,6 +122,11 @@ DFA DFAMinimizer::minimize(DFA &dfa) {
 
     for (Symbol symbol : alphabet) {
       StateID old_target = dfa.getNextState(representative, symbol);
+
+      // Skip if no transition exists
+      if (old_target == -1) {
+        continue;
+      }
 
       // Find target partition
       for (const auto &[target_superstate, target_state_id] :
