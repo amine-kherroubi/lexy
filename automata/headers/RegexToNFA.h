@@ -8,7 +8,7 @@ public:
 
 private:
   static NFA buildForSymbol(Symbol c);
-  static NFA concatenate(const NFA &first_nfa, const NFA &second_nfa);
-  static NFA alternate(const NFA &first_nfa, const NFA &second_nfa);
-  static NFA kleeneStar(const NFA &nfa);
+  static NFA concatenate(NFA &first_nfa, NFA &second_nfa);
+  static NFA alternate(NFA &first_nfa, NFA &second_nfa);
+  static NFA kleeneStar(NFA &nfa);
 };

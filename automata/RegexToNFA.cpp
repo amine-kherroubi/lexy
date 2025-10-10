@@ -5,17 +5,15 @@
 #include "headers/State.h"
 
 NFA RegexToNFA::buildForSymbol(Symbol c) {
-  const StateID start_state_id{0};
-  const StateID accept_state_id{1};
-  const States states{State{start_state_id}, State{accept_state_id}};
-  const StateIDs accepting_state_ids{accept_state_id};
+  const States states{State{0}, State{1}};
+  const StateIDs accepting_state_ids{1};
 
-  NFA nfa{states, accepting_state_ids, start_state_id};
-  nfa.addTransition(start_state_id, c, accept_state_id);
+  NFA nfa{states, accepting_state_ids, 0};
+  nfa.addTransition(0, c, 1);
   return nfa;
 }
 
-NFA RegexToNFA::concatenate(const NFA &first_nfa, const NFA &second_nfa) {
+NFA RegexToNFA::concatenate(NFA &first_nfa, NFA &second_nfa) {
   States combined_states{first_nfa.getStates()};
   int offset = combined_states.size();
 
@@ -69,7 +67,7 @@ NFA RegexToNFA::concatenate(const NFA &first_nfa, const NFA &second_nfa) {
   return resulting_nfa;
 }
 
-NFA RegexToNFA::alternate(const NFA &first_nfa, const NFA &second_nfa) {
+NFA RegexToNFA::alternate(NFA &first_nfa, NFA &second_nfa) {
   State start_state{0};
   States combined_states{start_state};
 
@@ -132,7 +130,7 @@ NFA RegexToNFA::alternate(const NFA &first_nfa, const NFA &second_nfa) {
   return resulting_nfa;
 }
 
-NFA RegexToNFA::kleeneStar(const NFA &nfa) {
+NFA RegexToNFA::kleeneStar(NFA &nfa) {
   StateIDs new_accepting_ids{nfa.getStartStateID()};
   for (StateID state_id : nfa.getAcceptingStateIDs()) {
     new_accepting_ids.push_back(state_id);
