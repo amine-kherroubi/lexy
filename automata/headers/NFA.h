@@ -20,6 +20,6 @@ public:
   void addEpsilonTransition(StateID from, StateID to);
   const StateIDs &getNextStates(StateID from, Symbol symbol) const;
   const StateIDs &getEpsilonNextStates(StateID from) const;
-  void addTransition(StateID from, Symbol symbol, StateID to) override;
+  void addTransition(StateID from, Symbol symbol, StateID to);
   Symbols getSymbols(StateID from) const;
 };

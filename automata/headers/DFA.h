@@ -15,5 +15,5 @@ public:
       : FA{states, accepting_state_ids, start_state_id},
         transitions(states.size()) {}
   StateID getNextState(StateID from, Symbol symbol) const;
-  void addTransition(StateID from, Symbol symbol, StateID to) override;
+  void addTransition(StateID from, Symbol symbol, StateID to);
 };
