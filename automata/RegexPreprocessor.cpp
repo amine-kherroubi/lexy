@@ -23,34 +23,27 @@ int RegexPreprocessor::precedence(char op) {
 }
 
 bool RegexPreprocessor::isLeftAssociative(char op) { return op != '*'; }
-
 std::string
 RegexPreprocessor::addConcatenationOperators(const std::string &regex) {
   std::string result;
-
   for (size_t i = 0; i < regex.length(); i++) {
     char current{regex[i]};
     result += current;
-
     if (i + 1 < regex.length()) {
       char next{regex[i + 1]};
-
       bool is_concat{(isOperand(current) || current == '*' || current == ')') &&
                      (isOperand(next) || next == '(')};
-
       if (is_concat) {
         result += '.';
       }
     }
   }
-
   return result;
 }
 
 std::string RegexPreprocessor::shuntingYard(const std::string &regex) {
   std::string output;
   std::stack<char> stack;
-
   for (char c : regex) {
     if (isOperand(c)) {
       output += c;
@@ -75,12 +68,10 @@ std::string RegexPreprocessor::shuntingYard(const std::string &regex) {
         stack.pop();
     }
   }
-
   while (!stack.empty()) {
     output += stack.top();
     stack.pop();
   }
-
   return output;
 }
 
