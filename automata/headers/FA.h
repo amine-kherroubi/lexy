@@ -17,10 +17,10 @@ public:
      StateID start_state_id)
       : states{states}, accepting_state_ids{accepting_state_ids},
         start_state_id{start_state_id} {}
-  const States &getStates() const { return states; };
-  const StateIDs &getAcceptingStateIDs() const { return accepting_state_ids; };
+  States &getStates() { return states; };
+  StateIDs &getAcceptingStateIDs() { return accepting_state_ids; };
   StateID getStartStateID() const { return start_state_id; };
-  const State &getState(StateID id) const { return states.at(id); }
+  State &getState(StateID id) { return states.at(id); }
   bool isAccepting(StateID id) const {
     for (StateID state_id : accepting_state_ids) {
       if (state_id == id)
