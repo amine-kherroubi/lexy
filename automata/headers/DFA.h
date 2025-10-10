@@ -1,8 +1,8 @@
 #pragma once
+
+#include "../../global/types.h"
 #include "FA.h"
 #include <unordered_map>
-using DeterministicTransitions =
-    std::vector<std::unordered_map<Symbol, StateID>>;
 
 class DFA : public FA {
 private:

@@ -1,5 +1,4 @@
 #include "headers/RegexToNFA.h"
-#include "headers/RegexPreprocessor.h"
 #include <memory>
 #include <stack>
 
@@ -109,8 +108,8 @@ NFA &RegexToNFA::kleeneStar(NFA &nfa) {
   return nfa;
 }
 
-NFA RegexToNFA::convert(const std::string &regex) {
-  std::string postfix = RegexPreprocessor::preprocess(regex);
+NFA RegexToNFA::convert(const String &regex) {
+  String postfix = RegexPreprocessor::preprocess(regex);
   std::stack<std::unique_ptr<NFA>> nfa_stack;
   for (char c : postfix) {
     if (c == '.') {

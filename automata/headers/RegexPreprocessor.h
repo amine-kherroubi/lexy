@@ -1,13 +1,15 @@
 #pragma once
+
+#include "../../global/types.h"
 #include <string>
 
 class RegexPreprocessor {
 public:
-  static std::string preprocess(const std::string &regex);
+  static String preprocess(const String &regex);
 
 private:
-  static std::string addConcatenationOperators(const std::string &regex);
-  static std::string shuntingYard(const std::string &regex);
+  static String addConcatenationOperators(const String &regex);
+  static String shuntingYard(const String &regex);
   static bool isOperator(char c);
   static bool isOperand(char c);
   static int precedence(char op);

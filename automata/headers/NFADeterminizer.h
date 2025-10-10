@@ -1,4 +1,6 @@
 #pragma once
+
+#include "../../global/types.h"
 #include "DFA.h"
 #include "NFA.h"
 #include <map>
@@ -9,12 +11,11 @@ public:
   static DFA determinize(const NFA &nfa);
 
 private:
-  static std::set<StateID> epsilonClosure(const NFA &nfa, StateID state);
-  static std::set<StateID> epsilonClosure(const NFA &nfa,
-                                          const std::set<StateID> &states);
-  static std::set<Symbol> collectAlphabet(const NFA &nfa);
-  static std::set<StateID> move(const NFA &nfa, const std::set<StateID> &states,
-                                Symbol symbol);
+  static Closure epsilonClosure(const NFA &nfa, StateID state);
+  static Closure epsilonClosure(const NFA &nfa, const Superstate &superstate);
+  static Alphabet collectAlphabet(const NFA &nfa);
+  static Superstate move(const NFA &nfa, const Superstate &superstate,
+                         Symbol symbol);
   static bool containsAcceptingState(const NFA &nfa,
-                                     const std::set<StateID> &states);
+                                     const Superstate &superstate);
 };

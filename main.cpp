@@ -3,7 +3,7 @@
 #include <iostream>
 
 int main() {
-  std::string regex{"((a|b)*c|(ab*c))*"};
+  String regex{"((a|b)*c|(ab*c))*"};
   std::cout << "Building NFA for " << regex << std::endl;
   NFA nfa5 = RegexToNFA::convert(regex);
   std::cout << "Number of states: " << nfa5.getStates().size() << std::endl;

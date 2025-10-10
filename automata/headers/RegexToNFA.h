@@ -1,10 +1,13 @@
 #pragma once
+
+#include "../../global/types.h"
 #include "NFA.h"
+#include "RegexPreprocessor.h"
 #include <string>
 
 class RegexToNFA {
 public:
-  static NFA convert(const std::string &regex);
+  static NFA convert(const String &regex);
 
 private:
   static NFA buildForSymbol(Symbol c);

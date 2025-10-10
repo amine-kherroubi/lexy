@@ -1,9 +1,9 @@
 #pragma once
-#include "Alphabet.h"
+
+#include "../../global/types.h"
 #include "State.h"
+#include <set>
 #include <vector>
-using States = std::vector<State>;
-using StateIDs = std::vector<StateID>;
 
 class FA {
 protected:

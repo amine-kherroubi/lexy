@@ -1,111 +1,43 @@
-/**
- * @file NFADeterminizer.cpp
- * @brief Converts Non-deterministic Finite Automata (NFA) to Deterministic
- * Finite Automata (DFA)
- *
- * This implementation uses the subset construction algorithm (powerset
- * construction). Each state in the resulting DFA represents a set of states
- * from the original NFA.
- *
- * Key Concepts:
- * - Epsilon Closure: All states reachable from a state using only epsilon
- * transitions
- * - Move: All states reachable from a set of states using a specific symbol
- * - Subset Construction: Building DFA states from sets of NFA states
- */
-
 #include "headers/NFADeterminizer.h"
 #include <map>
 #include <queue>
 
-/**
- * @brief Computes epsilon closure for a single state
- *
- * The epsilon closure of a state is the set of all states reachable from that
- * state using only epsilon (empty string) transitions, including the state
- * itself.
- *
- * Algorithm:
- * 1. Start with the input state in the closure
- * 2. Use a queue to process states
- * 3. For each state, add all epsilon-reachable states
- * 4. Continue until no new states are found
- *
- * @param nfa The NFA to operate on
- * @param state The starting state ID
- * @return Set of all states in the epsilon closure
- */
-std::set<StateID> NFADeterminizer::epsilonClosure(const NFA &nfa,
-                                                  StateID state) {
-  std::set<StateID> closure;
-  std::queue<StateID> to_process;
-
-  // Initialize: add the starting state
+Closure NFADeterminizer::epsilonClosure(const NFA &nfa, StateID state) {
+  Closure closure;
+  std::queue<StateID> states_to_process;
   closure.insert(state);
-  to_process.push(state);
-
-  // Process all reachable states via epsilon transitions
-  while (!to_process.empty()) {
-    StateID current = to_process.front();
-    to_process.pop();
-
-    // Get all states reachable via epsilon from current state
-    const StateIDs &epsilon_next = nfa.getEpsilonNextStates(current);
-
-    for (StateID next_state : epsilon_next) {
-      // Only process if we haven't seen this state before
+  states_to_process.push(state);
+  while (!states_to_process.empty()) {
+    StateID current = states_to_process.front();
+    states_to_process.pop();
+    const StateIDs &epsilon_reachable_states =
+        nfa.getEpsilonNextStates(current);
+    for (StateID next_state : epsilon_reachable_states) {
       if (closure.find(next_state) == closure.end()) {
         closure.insert(next_state);
-        to_process.push(next_state);
+        states_to_process.push(next_state);
       }
     }
   }
-
   return closure;
 }
 
-/**
- * @brief Computes epsilon closure for a set of states
- *
- * This is the union of epsilon closures for each individual state in the set.
- *
- * @param nfa The NFA to operate on
- * @param states Set of starting states
- * @return Set of all states in the combined epsilon closure
- */
-std::set<StateID>
-NFADeterminizer::epsilonClosure(const NFA &nfa,
-                                const std::set<StateID> &states) {
-  std::set<StateID> result;
-
-  // Compute epsilon closure for each state and combine results
-  for (StateID state : states) {
-    std::set<StateID> closure = epsilonClosure(nfa, state);
-    result.insert(closure.begin(), closure.end());
+Closure NFADeterminizer::epsilonClosure(const NFA &nfa,
+                                        const Superstate &superstate) {
+  Closure closure;
+  for (StateID state : superstate) {
+    Closure subclosure = epsilonClosure(nfa, state);
+    closure.insert(subclosure.begin(), subclosure.end());
   }
-
-  return result;
+  return closure;
 }
 
-/**
- * @brief Collects all symbols used in the NFA (the alphabet)
- *
- * Scans all transitions in the NFA to build the complete alphabet.
- * Epsilon transitions are not included as they are not part of the input
- * alphabet.
- *
- * @param nfa The NFA to analyze
- * @return Set of all symbols used in transitions
- */
-std::set<Symbol> NFADeterminizer::collectAlphabet(const NFA &nfa) {
-  std::set<Symbol> alphabet;
-
-  // Iterate through all states and collect their transition symbols
+Alphabet NFADeterminizer::collectAlphabet(const NFA &nfa) {
+  Alphabet alphabet;
   for (const State &state : nfa.getStates()) {
     Symbols symbols = nfa.getSymbols(state.getID());
     alphabet.insert(symbols.begin(), symbols.end());
   }
-
   return alphabet;
 }
 
@@ -125,10 +57,9 @@ std::set<Symbol> NFADeterminizer::collectAlphabet(const NFA &nfa) {
  * @param symbol The input symbol
  * @return Set of states reachable via symbol (with epsilon closure)
  */
-std::set<StateID> NFADeterminizer::move(const NFA &nfa,
-                                        const std::set<StateID> &states,
-                                        Symbol symbol) {
-  std::set<StateID> result;
+Superstate NFADeterminizer::move(const NFA &nfa, const Superstate &states,
+                                 Symbol symbol) {
+  Superstate result;
 
   // For each state in our current set
   for (StateID state : states) {
@@ -152,7 +83,7 @@ std::set<StateID> NFADeterminizer::move(const NFA &nfa,
  * @return true if at least one state is accepting, false otherwise
  */
 bool NFADeterminizer::containsAcceptingState(const NFA &nfa,
-                                             const std::set<StateID> &states) {
+                                             const Superstate &states) {
   for (StateID state : states) {
     if (nfa.isAccepting(state)) {
       return true;
@@ -185,14 +116,14 @@ DFA NFADeterminizer::determinize(const NFA &nfa) {
   std::set<Symbol> alphabet = collectAlphabet(nfa);
 
   // Step 2: Compute starting DFA state (epsilon closure of NFA start state)
-  std::set<StateID> start_set = epsilonClosure(nfa, nfa.getStartStateID());
+  Superstate start_set = epsilonClosure(nfa, nfa.getStartStateID());
 
   // Maps: NFA state set -> DFA state ID
   // This tracks which DFA state corresponds to which set of NFA states
-  std::map<std::set<StateID>, StateID> state_map;
+  std::map<Superstate, StateID> state_map;
 
   // Queue of DFA states (as NFA state sets) that need processing
-  std::queue<std::set<StateID>> unmarked_states;
+  std::queue<Superstate> unmarked_states;
 
   // DFA construction data
   States dfa_states;
@@ -215,7 +146,7 @@ DFA NFADeterminizer::determinize(const NFA &nfa) {
   // Step 4: Process all unmarked states (Subset Construction main loop)
   while (!unmarked_states.empty()) {
     // Get next unmarked state to process
-    std::set<StateID> current_set = unmarked_states.front();
+    Superstate current_set = unmarked_states.front();
     unmarked_states.pop();
 
     StateID current_dfa_state = state_map[current_set];
@@ -223,7 +154,7 @@ DFA NFADeterminizer::determinize(const NFA &nfa) {
     // For each symbol in the alphabet, compute transitions
     for (Symbol symbol : alphabet) {
       // Compute: where do we go from current_set on symbol?
-      std::set<StateID> next_set = move(nfa, current_set, symbol);
+      Superstate next_set = move(nfa, current_set, symbol);
 
       // Skip if no transition exists (dead end)
       if (next_set.empty()) {

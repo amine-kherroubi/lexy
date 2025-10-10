@@ -1,10 +1,9 @@
 #pragma once
+
+#include "../../global/types.h"
 #include "FA.h"
 #include <unordered_map>
 #include <vector>
-using NondeterministicTransitions =
-    std::vector<std::unordered_map<Symbol, StateIDs>>;
-using EpsilonTransitions = std::vector<StateIDs>;
 
 class NFA : public FA {
 private:

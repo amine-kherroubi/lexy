@@ -1,4 +1,5 @@
 #pragma once
+
 using StateID = int;
 
 class State {

@@ -1,4 +1,6 @@
 #pragma once
+
+#include "../../global/types.h"
 #include "DFA.h"
 
 class DFADeterminizer {
