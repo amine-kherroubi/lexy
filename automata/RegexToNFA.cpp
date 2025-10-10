@@ -1,4 +1,6 @@
 #include "headers/RegexToNFA.h"
+#include "headers/RegexPreprocessor.h"
+#include <stack>
 
 NFA RegexToNFA::buildForSymbol(Symbol c) {
   const States states{State{0}, State{1}};
@@ -125,4 +127,40 @@ NFA &RegexToNFA::kleeneStar(NFA &nfa) {
   }
 
   return nfa;
+}
+
+NFA RegexToNFA::convert(const std::string &regex) {
+  std::vector<char> rpn = RegexPreprocessor::convertToRPN(regex);
+  std::stack<NFA *> nfa_stack;
+
+  for (char c : rpn) {
+    if (RegexPreprocessor::isOperand(c)) {
+      nfa_stack.push(new NFA(buildForSymbol(c)));
+    } else if (c == '.') {
+      NFA *second = nfa_stack.top();
+      nfa_stack.pop();
+      NFA *first = nfa_stack.top();
+      nfa_stack.pop();
+      concatenate(*first, *second);
+      delete second;
+      nfa_stack.push(first);
+    } else if (c == '|') {
+      NFA *second = nfa_stack.top();
+      nfa_stack.pop();
+      NFA *first = nfa_stack.top();
+      nfa_stack.pop();
+      alternate(*first, *second);
+      delete second;
+      nfa_stack.push(first);
+    } else if (c == '*') {
+      NFA *nfa = nfa_stack.top();
+      nfa_stack.pop();
+      kleeneStar(*nfa);
+      nfa_stack.push(nfa);
+    }
+  }
+
+  NFA result = *nfa_stack.top();
+  delete nfa_stack.top();
+  return result;
 }
