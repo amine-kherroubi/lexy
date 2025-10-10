@@ -14,7 +14,7 @@ NFA RegexToNFA::buildForSymbol(Symbol c) {
 
 NFA RegexToNFA::concatenate(const NFA &left, const NFA &right) {
   States combined_states{left.getStates()};
-  size_t left_size{combined_states.size()};
+  int left_size = combined_states.size();
 
   States right_states{right.getStates()};
   for (State &state : right_states) {
@@ -47,7 +47,7 @@ NFA RegexToNFA::concatenate(const NFA &left, const NFA &right) {
 
   for (const State &state : right.getStates()) {
     StateID from{state.getID()};
-    StateID original_from{from - (int)left_size};
+    StateID original_from{from - left_size};
 
     for (Symbol symbol : right.getSymbols(original_from)) {
       for (StateID to : right.getNextStates(original_from, symbol)) {
