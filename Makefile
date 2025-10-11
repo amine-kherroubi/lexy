@@ -10,7 +10,8 @@ SRCS = main.cpp \
        regex/RegexParser.cpp \
        regex/RegexPreprocessor.cpp \
        regex/RegexASTToNFA.cpp \
-       utils/AutomataVisualize.cpp
+       utils/AutomataVisualize.cpp \
+       utils/RegexASTVisualizer.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 TARGET = main.exe

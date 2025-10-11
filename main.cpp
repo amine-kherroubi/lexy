@@ -4,6 +4,7 @@
 #include "regex/headers/RegexParser.h"
 #include "regex/headers/RegexScanner.h"
 #include "utils/headers/AutomataVisualizer.h"
+#include "utils/headers/RegexASTVisualizer.h"
 #include <iostream>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -43,6 +44,11 @@ int main(int argc, char *argv[]) {
     Pointer<RegexASTNode> ast = parser.parse();
     cout << "AST created successfully" << endl;
 
+    // Visualize AST
+    cout << "\nVisualizing AST..." << endl;
+    RegexASTVisualizer::visualizeAST(ast.get(), "graphviz/regex_ast",
+                                     "images/regex_ast");
+
     // Convert AST to NFA
     cout << "\nConverting AST to NFA..." << endl;
     NFA nfa = RegexASTToNFA::convert(ast.get());
@@ -66,6 +72,10 @@ int main(int argc, char *argv[]) {
     cout << "\nAll visualizations generated successfully!" << endl;
     cout << "DOT files saved in: graphviz/" << endl;
     cout << "Images saved in: images/" << endl;
+    cout << "  - images/regex_ast.png (Abstract Syntax Tree)" << endl;
+    cout << "  - images/nfa.png (Non-deterministic Finite Automaton)" << endl;
+    cout << "  - images/dfa.png (Deterministic Finite Automaton)" << endl;
+    cout << "  - images/minimized_dfa.png (Minimized DFA)" << endl;
 
   } catch (const exception &e) {
     cerr << "Error: " << e.what() << endl;

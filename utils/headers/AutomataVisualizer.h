@@ -4,6 +4,7 @@
 #include "../../automata/headers/NFA.h"
 #include "../../global/types.h"
 #include <fstream>
+#include <iostream>
 #include <sstream>
 
 class AutomataVisualizer {

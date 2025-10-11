@@ -1,5 +1,4 @@
 #include "headers/AutomataVisualizer.h"
-#include <iostream>
 
 using namespace std;
 
