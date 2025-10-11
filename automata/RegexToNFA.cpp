@@ -6,112 +6,116 @@ NFA RegexToNFA::buildForSymbol(Symbol c) {
   const States states{State{0}, State{1}};
   const StateIDs accepting_state_ids{1};
   NFA nfa(Alphabet{c}, states, accepting_state_ids, 0);
+  nfa.resizeTransitions(2);
   nfa.addTransition(0, c, 1);
   return nfa;
 }
 
-NFA &RegexToNFA::concatenate(NFA &first_nfa, NFA &second_nfa) {
+NFA RegexToNFA::concatenate(const NFA &first_nfa, const NFA &second_nfa) {
+  // Create a copy to work with
+  NFA result = first_nfa;
+
   // Merge alphabets
-  Alphabet &first_alphabet = first_nfa.getAlphabet();
+  Alphabet &result_alphabet = result.getAlphabet();
   const Alphabet &second_alphabet = second_nfa.getAlphabet();
-  first_alphabet.insert(second_alphabet.begin(), second_alphabet.end());
+  result_alphabet.insert(second_alphabet.begin(), second_alphabet.end());
 
   // Calculate offset for second NFA states
-  int id_offset = first_nfa.getStates().size();
+  int id_offset = result.getStates().size();
 
-  // Save original accepting states of first NFA before clearing
-  StateIDs old_first_accepting_ids = first_nfa.getAcceptingStateIDs();
+  // Save original accepting states before clearing
+  StateIDs old_accepting_ids = result.getAcceptingStateIDs();
 
-  // Update state IDs in second NFA
-  States &second_nfa_states = second_nfa.getStates();
-  for (State &state : second_nfa_states) {
-    state.setID(id_offset + state.getID());
+  // Add second NFA states with offset
+  const States &second_states = second_nfa.getStates();
+  for (size_t i = 0; i < second_states.size(); i++) {
+    State new_state{id_offset + second_states[i].getID()};
+    result.getStates().push_back(new_state);
   }
 
-  // Add second NFA states to first NFA
-  first_nfa.getStates().insert(first_nfa.getStates().end(),
-                               second_nfa_states.begin(),
-                               second_nfa_states.end());
-
   // Resize transition table
-  first_nfa.resizeTransitions(first_nfa.getStates().size());
+  result.resizeTransitions(result.getStates().size());
 
-  // Update accepting states
-  StateIDs &new_accepting_ids = first_nfa.getAcceptingStateIDs();
+  // Update accepting states to second NFA's accepting states (with offset)
+  StateIDs &new_accepting_ids = result.getAcceptingStateIDs();
   new_accepting_ids.clear();
-  for (StateID id : second_nfa.getAcceptingStateIDs()) {
+  const StateIDs &second_accepting = second_nfa.getAcceptingStateIDs();
+  for (StateID id : second_accepting) {
     new_accepting_ids.push_back(id_offset + id);
   }
 
   // Copy transitions from second NFA with offset
-  for (size_t i = 0; i < second_nfa.getStates().size(); i++) {
-    StateID original_from = i;
+  for (size_t i = 0; i < second_states.size(); i++) {
+    StateID original_from = second_states[i].getID();
     StateID new_from = id_offset + original_from;
 
     // Copy regular transitions
-    for (Symbol symbol : second_nfa.getSymbols(original_from)) {
-      for (StateID to : second_nfa.getNextStateIDs(original_from, symbol)) {
-        first_nfa.addTransition(new_from, symbol, id_offset + to);
+    Symbols symbols = second_nfa.getSymbols(original_from);
+    for (Symbol symbol : symbols) {
+      StateIDs targets = second_nfa.getNextStateIDs(original_from, symbol);
+      for (StateID to : targets) {
+        result.addTransition(new_from, symbol, id_offset + to);
       }
     }
 
     // Copy epsilon transitions
-    for (StateID to : second_nfa.getEpsilonNextStatesIDs(original_from)) {
-      first_nfa.addEpsilonTransition(new_from, id_offset + to);
+    StateIDs epsilon_targets =
+        second_nfa.getEpsilonNextStatesIDs(original_from);
+    for (StateID to : epsilon_targets) {
+      result.addEpsilonTransition(new_from, id_offset + to);
     }
   }
 
   // Connect old accepting states of first NFA to start of second NFA
   StateID second_start = id_offset + second_nfa.getStartStateID();
-  for (StateID accepting : old_first_accepting_ids) {
-    first_nfa.addEpsilonTransition(accepting, second_start);
+  for (StateID accepting : old_accepting_ids) {
+    result.addEpsilonTransition(accepting, second_start);
   }
 
-  return first_nfa;
+  return result;
 }
 
-NFA &RegexToNFA::alternate(NFA &first_nfa, NFA &second_nfa) {
+NFA RegexToNFA::alternate(const NFA &first_nfa, const NFA &second_nfa) {
+  // Create new NFA with a new start state (state 0)
+  NFA result = first_nfa;
+
   // Merge alphabets
-  Alphabet &first_alphabet = first_nfa.getAlphabet();
+  Alphabet &result_alphabet = result.getAlphabet();
   const Alphabet &second_alphabet = second_nfa.getAlphabet();
-  first_alphabet.insert(second_alphabet.begin(), second_alphabet.end());
+  result_alphabet.insert(second_alphabet.begin(), second_alphabet.end());
 
-  size_t old_first_size = first_nfa.getStates().size();
-
-  // Create new start state
-  State new_start{0};
-
-  // Shift first NFA states by 1
-  States &first_nfa_states = first_nfa.getStates();
-  for (State &state : first_nfa_states) {
+  // Shift all first NFA states by 1
+  States &result_states = result.getStates();
+  for (State &state : result_states) {
     state.setID(1 + state.getID());
   }
-  first_nfa_states.insert(first_nfa_states.begin(), new_start);
 
-  // Calculate offset for second NFA
-  int id_offset = first_nfa_states.size();
+  // Add new start state at position 0
+  State new_start{0};
+  result_states.insert(result_states.begin(), new_start);
 
-  // Update state IDs in second NFA
-  States &second_nfa_states = second_nfa.getStates();
-  for (State &state : second_nfa_states) {
-    state.setID(id_offset + state.getID());
+  // Calculate offset for second NFA (after first NFA + new start state)
+  int id_offset = result_states.size();
+
+  // Add second NFA states with offset
+  const States &second_states = second_nfa.getStates();
+  for (size_t i = 0; i < second_states.size(); i++) {
+    State new_state{id_offset + second_states[i].getID()};
+    result_states.push_back(new_state);
   }
 
-  // Add second NFA states to first NFA
-  first_nfa.getStates().insert(first_nfa.getStates().end(),
-                               second_nfa_states.begin(),
-                               second_nfa_states.end());
-
-  // Resize and shift transitions
+  // Save old transitions before resizing
+  size_t old_first_size = first_nfa.getStates().size();
   NondeterministicTransitions old_transitions(old_first_size);
   EpsilonTransitions old_epsilon(old_first_size);
 
-  // Copy old transitions
+  // Copy old first NFA transitions
   for (size_t i = 0; i < old_first_size; i++) {
-    StateID old_from = i;
+    StateID old_from = first_nfa.getStates()[i].getID();
 
     // Copy regular transitions
-    for (Symbol symbol : first_nfa.getSymbols(old_from)) {
+    Symbols symbols = first_nfa.getSymbols(old_from);
+    for (Symbol symbol : symbols) {
       old_transitions[i][symbol] = first_nfa.getNextStateIDs(old_from, symbol);
     }
 
@@ -119,68 +123,76 @@ NFA &RegexToNFA::alternate(NFA &first_nfa, NFA &second_nfa) {
     old_epsilon[i] = first_nfa.getEpsilonNextStatesIDs(old_from);
   }
 
-  // Resize transition table
-  first_nfa.resizeTransitions(first_nfa.getStates().size());
+  // Resize transition table for all states
+  result.resizeTransitions(result_states.size());
 
-  // Re-add old transitions with shifted state IDs
+  // Re-add first NFA transitions with shifted state IDs (+1)
   for (size_t i = 0; i < old_first_size; i++) {
-    StateID new_from = i + 1; // Shifted by 1
+    StateID new_from = i + 1;
 
     // Add regular transitions
     for (const auto &[symbol, targets] : old_transitions[i]) {
       for (StateID old_to : targets) {
-        first_nfa.addTransition(new_from, symbol, old_to + 1);
+        result.addTransition(new_from, symbol, old_to + 1);
       }
     }
 
     // Add epsilon transitions
     for (StateID old_to : old_epsilon[i]) {
-      first_nfa.addEpsilonTransition(new_from, old_to + 1);
+      result.addEpsilonTransition(new_from, old_to + 1);
     }
   }
 
   // Update accepting states from first NFA (shifted by 1)
-  StateIDs &accepting_ids = first_nfa.getAcceptingStateIDs();
+  StateIDs &accepting_ids = result.getAcceptingStateIDs();
   for (StateID &id : accepting_ids) {
     id += 1;
   }
 
   // Add accepting states from second NFA (with offset)
-  for (StateID id : second_nfa.getAcceptingStateIDs()) {
+  const StateIDs &second_accepting = second_nfa.getAcceptingStateIDs();
+  for (StateID id : second_accepting) {
     accepting_ids.push_back(id_offset + id);
+  }
+
+  // Copy transitions from second NFA with offset
+  for (size_t i = 0; i < second_states.size(); i++) {
+    StateID original_from = second_states[i].getID();
+    StateID new_from = id_offset + original_from;
+
+    // Copy regular transitions
+    Symbols symbols = second_nfa.getSymbols(original_from);
+    for (Symbol symbol : symbols) {
+      StateIDs targets = second_nfa.getNextStateIDs(original_from, symbol);
+      for (StateID to : targets) {
+        result.addTransition(new_from, symbol, id_offset + to);
+      }
+    }
+
+    // Copy epsilon transitions
+    StateIDs epsilon_targets =
+        second_nfa.getEpsilonNextStatesIDs(original_from);
+    for (StateID to : epsilon_targets) {
+      result.addEpsilonTransition(new_from, id_offset + to);
+    }
   }
 
   // Set new start state and connect to both original start states
   StateID old_first_start = 1 + first_nfa.getStartStateID();
   StateID second_start = id_offset + second_nfa.getStartStateID();
-  first_nfa.setStartStateID(0);
-  first_nfa.addEpsilonTransition(0, old_first_start);
-  first_nfa.addEpsilonTransition(0, second_start);
+  result.setStartStateID(0);
+  result.addEpsilonTransition(0, old_first_start);
+  result.addEpsilonTransition(0, second_start);
 
-  // Copy transitions from second NFA with id_offset
-  for (size_t i = 0; i < second_nfa.getStates().size(); i++) {
-    StateID original_from = i;
-    StateID new_from = id_offset + original_from;
-
-    // Copy regular transitions
-    for (Symbol symbol : second_nfa.getSymbols(original_from)) {
-      for (StateID to : second_nfa.getNextStateIDs(original_from, symbol)) {
-        first_nfa.addTransition(new_from, symbol, id_offset + to);
-      }
-    }
-
-    // Copy epsilon transitions
-    for (StateID to : second_nfa.getEpsilonNextStatesIDs(original_from)) {
-      first_nfa.addEpsilonTransition(new_from, id_offset + to);
-    }
-  }
-
-  return first_nfa;
+  return result;
 }
 
-NFA &RegexToNFA::kleeneStar(NFA &nfa) {
-  StateID start_state_id = nfa.getStartStateID();
-  StateIDs &accepting_ids = nfa.getAcceptingStateIDs();
+NFA RegexToNFA::kleeneStar(const NFA &nfa) {
+  // Create a copy to work with
+  NFA result = nfa;
+
+  StateID start_state_id = result.getStartStateID();
+  StateIDs &accepting_ids = result.getAcceptingStateIDs();
 
   // Check if start state is already accepting
   bool start_is_accepting = false;
@@ -197,14 +209,15 @@ NFA &RegexToNFA::kleeneStar(NFA &nfa) {
   }
 
   // Add epsilon transitions from accepting states back to start
+  // Make a copy to avoid modifying the list we're iterating over
   StateIDs accepting_copy = accepting_ids;
   for (StateID accepting_id : accepting_copy) {
     if (accepting_id != start_state_id) {
-      nfa.addEpsilonTransition(accepting_id, start_state_id);
+      result.addEpsilonTransition(accepting_id, start_state_id);
     }
   }
 
-  return nfa;
+  return result;
 }
 
 NFA RegexToNFA::convert(const String &regex) {
@@ -213,29 +226,41 @@ NFA RegexToNFA::convert(const String &regex) {
 
   for (char c : postfix) {
     if (c == '.') {
-      NFA second = std::move(nfa_stack.top());
+      // Pop second, then first (order matters)
+      NFA second = nfa_stack.top();
       nfa_stack.pop();
-      NFA first = std::move(nfa_stack.top());
+      NFA first = nfa_stack.top();
       nfa_stack.pop();
-      concatenate(first, second);
-      nfa_stack.push(std::move(first));
+
+      // Concatenate and push result
+      NFA result = concatenate(first, second);
+      nfa_stack.push(result);
+
     } else if (c == '|') {
-      NFA second = std::move(nfa_stack.top());
+      // Pop second, then first (order matters)
+      NFA second = nfa_stack.top();
       nfa_stack.pop();
-      NFA first = std::move(nfa_stack.top());
+      NFA first = nfa_stack.top();
       nfa_stack.pop();
-      alternate(first, second);
-      nfa_stack.push(std::move(first));
+
+      // Alternate and push result
+      NFA result = alternate(first, second);
+      nfa_stack.push(result);
+
     } else if (c == '*') {
-      NFA nfa = std::move(nfa_stack.top());
+      // Pop the NFA to apply Kleene star
+      NFA nfa = nfa_stack.top();
       nfa_stack.pop();
-      kleeneStar(nfa);
-      nfa_stack.push(std::move(nfa));
+
+      // Apply Kleene star and push result
+      NFA result = kleeneStar(nfa);
+      nfa_stack.push(result);
+
     } else {
-      // Symbol
+      // Regular symbol - build NFA and push
       nfa_stack.push(buildForSymbol(c));
     }
   }
 
-  return std::move(nfa_stack.top());
+  return nfa_stack.top();
 }

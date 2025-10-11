@@ -44,7 +44,7 @@ void Visualizer::renderDotFile(const String &dot_filename,
   }
 }
 
-void Visualizer::visualizeNFA(NFA &nfa, const String &filename) {
+void Visualizer::visualizeNFA(const NFA &nfa, const String &filename) {
   std::ostringstream dot;
 
   dot << "digraph NFA {\n";
@@ -67,11 +67,13 @@ void Visualizer::visualizeNFA(NFA &nfa, const String &filename) {
   dot << "  start -> " << nfa.getStartStateID() << ";\n";
 
   // Add transitions
-  for (const State &state : nfa.getStates()) {
+  States states = nfa.getStates();
+  for (const State &state : states) {
     StateID from = state.getID();
 
     // Regular transitions
-    for (Symbol symbol : nfa.getSymbols(from)) {
+    Symbols symbols = nfa.getSymbols(from);
+    for (Symbol symbol : symbols) {
       StateIDs targets = nfa.getNextStateIDs(from, symbol);
       for (StateID to : targets) {
         dot << "  " << from << " -> " << to << " [label=\""
@@ -93,7 +95,7 @@ void Visualizer::visualizeNFA(NFA &nfa, const String &filename) {
   renderDotFile(dot_filename);
 }
 
-void Visualizer::visualizeDFA(DFA &dfa, const String &filename) {
+void Visualizer::visualizeDFA(const DFA &dfa, const String &filename) {
   std::ostringstream dot;
 
   dot << "digraph DFA {\n";
@@ -117,7 +119,8 @@ void Visualizer::visualizeDFA(DFA &dfa, const String &filename) {
 
   // Add transitions
   Alphabet alphabet = dfa.getAlphabet();
-  for (const State &state : dfa.getStates()) {
+  States states = dfa.getStates();
+  for (const State &state : states) {
     StateID from = state.getID();
 
     for (Symbol symbol : alphabet) {

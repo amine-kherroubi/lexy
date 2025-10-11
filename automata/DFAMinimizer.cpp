@@ -2,139 +2,130 @@
 #include "headers/DFA.h"
 #include "headers/State.h"
 #include <map>
-#include <queue>
-#include <set>
+#include <vector>
 
-DFA DFAMinimizer::minimize(DFA &dfa) {
-  std::map<Superstate, StateID> superstate_to_state_id_map;
-  std::queue<Superstate> superstates_to_process;
-  std::set<Superstate> processed_superstates;
-  Superstate nonaccepting_superstate, accepting_superstate;
-  int next_state_id = 0;
+DFA DFAMinimizer::minimize(const DFA &dfa) {
+  // Step 1: Create initial partitions (accepting vs non-accepting)
+  std::vector<Superstate> partitions;
+  Superstate nonaccepting_partition;
+  Superstate accepting_partition;
 
-  // Initial partition: accepting vs non-accepting states
-  for (State state : dfa.getStates()) {
+  for (const State &state : dfa.getStates()) {
     if (dfa.isAccepting(state.getID())) {
-      accepting_superstate.insert(state.getID());
+      accepting_partition.insert(state.getID());
     } else {
-      nonaccepting_superstate.insert(state.getID());
+      nonaccepting_partition.insert(state.getID());
     }
   }
 
-  // Add non-accepting partition
-  if (!nonaccepting_superstate.empty()) {
-    superstate_to_state_id_map[nonaccepting_superstate] = next_state_id++;
-    superstates_to_process.push(nonaccepting_superstate);
+  if (!nonaccepting_partition.empty()) {
+    partitions.push_back(nonaccepting_partition);
   }
-
-  // Add accepting partition
-  if (!accepting_superstate.empty()) {
-    superstate_to_state_id_map[accepting_superstate] = next_state_id++;
-    superstates_to_process.push(accepting_superstate);
+  if (!accepting_partition.empty()) {
+    partitions.push_back(accepting_partition);
   }
 
   Alphabet alphabet = dfa.getAlphabet();
 
-  // Refine partitions
-  while (!superstates_to_process.empty()) {
-    Superstate current_superstate = superstates_to_process.front();
-    superstates_to_process.pop();
+  // Step 2: Refine partitions until no more splits occur
+  bool changed = true;
+  while (changed) {
+    changed = false;
+    std::vector<Superstate> new_partitions;
 
-    if (processed_superstates.find(current_superstate) !=
-        processed_superstates.end()) {
-      continue;
+    for (const Superstate &partition : partitions) {
+      // For each partition, try to split it
+      std::map<std::vector<int>, Superstate> signature_to_states;
+
+      for (StateID state_id : partition) {
+        // Create signature: for each symbol, which partition does it go to?
+        std::vector<int> signature;
+
+        for (Symbol symbol : alphabet) {
+          StateID next_state = dfa.getNextState(state_id, symbol);
+
+          // Find which partition contains next_state
+          int target_partition_index = -1;
+          if (next_state != -1) {
+            for (size_t i = 0; i < partitions.size(); i++) {
+              if (partitions[i].find(next_state) != partitions[i].end()) {
+                target_partition_index = i;
+                break;
+              }
+            }
+          }
+
+          signature.push_back(target_partition_index);
+        }
+
+        // Group states with same signature
+        signature_to_states[signature].insert(state_id);
+      }
+
+      // If we have multiple groups, the partition was split
+      if (signature_to_states.size() > 1) {
+        changed = true;
+        for (const auto &[signature, states] : signature_to_states) {
+          new_partitions.push_back(states);
+        }
+      } else {
+        // No split, keep the partition as is
+        new_partitions.push_back(partition);
+      }
     }
-    processed_superstates.insert(current_superstate);
 
-    for (Symbol symbol : alphabet) {
-      std::map<StateID, Superstate> transition_map;
+    partitions = new_partitions;
+  }
 
-      // Group states by their transition target partition
-      for (StateID state_id : current_superstate) {
-        StateID next_state = dfa.getNextState(state_id, symbol);
-
-        // Skip if no transition exists
-        if (next_state == -1) {
-          continue;
-        }
-
-        // Find which superstate contains next_state
-        for (const auto &[target_superstate, target_id] :
-             superstate_to_state_id_map) {
-          if (target_superstate.find(next_state) != target_superstate.end()) {
-            transition_map[target_id].insert(state_id);
-            break;
-          }
-        }
-      }
-
-      // Split partition if states transition to different targets
-      if (transition_map.size() > 1) {
-        superstate_to_state_id_map.erase(current_superstate);
-
-        for (const auto &[target_partition_id, states_in_new_partition] :
-             transition_map) {
-          if (superstate_to_state_id_map.find(states_in_new_partition) ==
-              superstate_to_state_id_map.end()) {
-            superstate_to_state_id_map[states_in_new_partition] =
-                next_state_id++;
-            superstates_to_process.push(states_in_new_partition);
-          }
-        }
-      }
+  // Step 3: Build the minimized DFA
+  // Create mapping from old state ID to new partition ID
+  std::map<StateID, StateID> old_to_new_state;
+  for (size_t i = 0; i < partitions.size(); i++) {
+    for (StateID old_id : partitions[i]) {
+      old_to_new_state[old_id] = i;
     }
   }
 
-  // Find the new initial state
+  // Find new initial state
   StateID old_initial = dfa.getStartStateID();
-  StateID new_initial = 0;
+  StateID new_initial = old_to_new_state[old_initial];
 
-  for (const auto &[superstate, new_state_id] : superstate_to_state_id_map) {
-    if (superstate.find(old_initial) != superstate.end()) {
-      new_initial = new_state_id;
-      break;
+  // Build new states and accepting states
+  States minimized_states;
+  StateIDs minimized_accepting_ids;
+
+  for (size_t i = 0; i < partitions.size(); i++) {
+    minimized_states.push_back(State{static_cast<int>(i)});
+
+    // Check if this partition contains an accepting state
+    bool is_accepting = false;
+    for (StateID old_id : partitions[i]) {
+      if (dfa.isAccepting(old_id)) {
+        is_accepting = true;
+        break;
+      }
+    }
+
+    if (is_accepting) {
+      minimized_accepting_ids.push_back(i);
     }
   }
 
   // Build minimized DFA
-  States minimized_states;
-  StateIDs minimized_accepting_ids;
-
-  for (const auto &[superstate, new_state_id] : superstate_to_state_id_map) {
-    minimized_states.push_back(State{new_state_id});
-
-    // Check if this partition contains an accepting state
-    for (StateID old_id : superstate) {
-      if (dfa.isAccepting(old_id)) {
-        minimized_accepting_ids.push_back(new_state_id);
-        break;
-      }
-    }
-  }
-
   DFA minimized_dfa{alphabet, minimized_states, minimized_accepting_ids,
                     new_initial};
-  minimized_dfa.resizeTransitions(superstate_to_state_id_map.size());
+  minimized_dfa.resizeTransitions(partitions.size());
 
-  // Build transitions
-  for (const auto &[superstate, from_state_id] : superstate_to_state_id_map) {
-    StateID representative = *superstate.begin();
+  // Build transitions using a representative from each partition
+  for (size_t i = 0; i < partitions.size(); i++) {
+    StateID representative = *partitions[i].begin();
 
     for (Symbol symbol : alphabet) {
       StateID old_target = dfa.getNextState(representative, symbol);
 
-      // Skip if no transition exists
-      if (old_target == -1) {
-        continue;
-      }
-
-      // Find target partition
-      for (const auto &[target_superstate, target_state_id] :
-           superstate_to_state_id_map) {
-        if (target_superstate.find(old_target) != target_superstate.end()) {
-          minimized_dfa.addTransition(from_state_id, symbol, target_state_id);
-          break;
-        }
+      if (old_target != -1) {
+        StateID new_target = old_to_new_state[old_target];
+        minimized_dfa.addTransition(i, symbol, new_target);
       }
     }
   }

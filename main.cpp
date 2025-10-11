@@ -26,7 +26,7 @@ int main() {
             << " states" << std::endl;
   Visualizer::visualizeDFA(dfa, "minimized_dfa");
 
-  std::cout << "\n✓ All visualizations generated successfully!" << std::endl;
+  std::cout << "\nAll visualizations generated successfully!" << std::endl;
 
   return 0;
 }

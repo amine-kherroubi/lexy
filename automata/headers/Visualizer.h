@@ -8,8 +8,8 @@
 
 class Visualizer {
 public:
-  static void visualizeNFA(NFA &nfa, const String &filename);
-  static void visualizeDFA(DFA &dfa, const String &filename);
+  static void visualizeNFA(const NFA &nfa, const String &filename);
+  static void visualizeDFA(const DFA &dfa, const String &filename);
 
 private:
   static String escapeLabel(Symbol symbol);
