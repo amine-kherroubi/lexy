@@ -1,7 +1,7 @@
 #include "headers/RegexPreprocessor.h"
 
 bool RegexPreprocessor::isOperator(char c) {
-  return c == '|' || c == '.' || c == '*';
+  return c == '|' || c == '.' || c == '?' || c == '+' || c == '*';
 }
 
 bool RegexPreprocessor::isOperand(char c) {
@@ -11,6 +11,10 @@ bool RegexPreprocessor::isOperand(char c) {
 int RegexPreprocessor::precedence(char op) {
   switch (op) {
   case '*':
+    return 5;
+  case '+':
+    return 4;
+  case '?':
     return 3;
   case '.':
     return 2;
@@ -23,7 +27,7 @@ int RegexPreprocessor::precedence(char op) {
 
 bool RegexPreprocessor::isLeftAssociative(char op) {
   // Kleene star is right-associative
-  return op != '*';
+  return op != '?' and op != '+' and op != '*';
 }
 
 String RegexPreprocessor::addConcatenationOperators(const String &regex) {
@@ -33,7 +37,8 @@ String RegexPreprocessor::addConcatenationOperators(const String &regex) {
     result += current;
     if (i + 1 < regex.length()) {
       char next{regex[i + 1]};
-      bool is_concat{(isOperand(current) || current == '*' || current == ')') &&
+      bool is_concat{(isOperand(current) || current == '?' || current == '+' ||
+                      current == '*' || current == ')') &&
                      (isOperand(next) || next == '(')};
       if (is_concat) {
         result += '.';

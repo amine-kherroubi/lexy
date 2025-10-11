@@ -11,5 +11,5 @@ private:
   static NFA buildForSymbol(Symbol c);
   static NFA concatenate(const NFA &first_nfa, const NFA &second_nfa);
   static NFA alternate(const NFA &first_nfa, const NFA &second_nfa);
-  static NFA kleeneStar(const NFA &nfa);
+  static NFA kleeneStar(const NFA &nfa, bool non_empty = false);
 };

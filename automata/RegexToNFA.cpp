@@ -172,7 +172,7 @@ NFA RegexToNFA::alternate(const NFA &first_nfa, const NFA &second_nfa) {
   return result;
 }
 
-NFA RegexToNFA::kleeneStar(const NFA &nfa) {
+NFA RegexToNFA::kleeneStar(const NFA &nfa, bool non_empty) {
   // Create a copy to work with
   NFA result = nfa;
 
@@ -189,7 +189,7 @@ NFA RegexToNFA::kleeneStar(const NFA &nfa) {
   }
 
   // Make start state accepting (for empty string) only if not already
-  if (!start_is_accepting) {
+  if (!start_is_accepting and not !non_empty) {
     accepting_ids.push_back(start_state_id);
   }
 
@@ -228,6 +228,24 @@ NFA RegexToNFA::convert(const String &regex) {
 
       // Alternate and push result
       NFA result = alternate(first, second);
+      nfa_stack.push(result);
+
+    } else if (c == '?') {
+      // Pop the NFA to apply Kleene star
+      NFA nfa = nfa_stack.top();
+      nfa_stack.pop();
+
+      // Apply Kleene star and push result
+      NFA result = kleeneStar(nfa);
+      nfa_stack.push(result);
+
+    } else if (c == '+') {
+      // Pop the NFA to apply Kleene star
+      NFA nfa = nfa_stack.top();
+      nfa_stack.pop();
+
+      // Apply Kleene star and push result
+      NFA result = kleeneStar(nfa, true);
       nfa_stack.push(result);
 
     } else if (c == '*') {
