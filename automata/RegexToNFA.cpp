@@ -1,5 +1,5 @@
 #include "headers/RegexToNFA.h"
-#include "headers/RegexPreprocessor.h"
+#include "../regex/headers/RegexPreprocessor.h"
 
 NFA RegexToNFA::buildForSymbol(Symbol c) {
   const States states{State{0}, State{1}};
@@ -27,7 +27,7 @@ NFA RegexToNFA::concatenate(const NFA &first_nfa, const NFA &second_nfa) {
 
   // Add second NFA states with offset
   const States &second_states = second_nfa.getStates();
-  for (size_t i = 0; i < second_states.size(); i++) {
+  for (Index i = 0; i < second_states.size(); i++) {
     State new_state{id_offset + second_states[i].getID()};
     result.getStates().push_back(new_state);
   }
@@ -44,7 +44,7 @@ NFA RegexToNFA::concatenate(const NFA &first_nfa, const NFA &second_nfa) {
   }
 
   // Copy transitions from second NFA with offset
-  for (size_t i = 0; i < second_states.size(); i++) {
+  for (Index i = 0; i < second_states.size(); i++) {
     StateID original_from = second_states[i].getID();
     StateID new_from = id_offset + original_from;
 
@@ -86,7 +86,7 @@ NFA RegexToNFA::alternate(const NFA &first_nfa, const NFA &second_nfa) {
 
   // Add first NFA states with offset of 1
   const States &first_states = first_nfa.getStates();
-  for (size_t i = 0; i < first_states.size(); i++) {
+  for (Index i = 0; i < first_states.size(); i++) {
     State new_state{1 + first_states[i].getID()};
     new_states.push_back(new_state);
   }
@@ -96,7 +96,7 @@ NFA RegexToNFA::alternate(const NFA &first_nfa, const NFA &second_nfa) {
 
   // Add second NFA states with offset
   const States &second_states = second_nfa.getStates();
-  for (size_t i = 0; i < second_states.size(); i++) {
+  for (Index i = 0; i < second_states.size(); i++) {
     State new_state{second_offset + second_states[i].getID()};
     new_states.push_back(new_state);
   }
@@ -121,7 +121,7 @@ NFA RegexToNFA::alternate(const NFA &first_nfa, const NFA &second_nfa) {
   result.resizeTransitions(new_states.size());
 
   // Copy first NFA transitions (with +1 offset)
-  for (size_t i = 0; i < first_states.size(); i++) {
+  for (Index i = 0; i < first_states.size(); i++) {
     StateID original_from = first_states[i].getID();
     StateID new_from = original_from + 1;
 
@@ -142,7 +142,7 @@ NFA RegexToNFA::alternate(const NFA &first_nfa, const NFA &second_nfa) {
   }
 
   // Copy second NFA transitions (with offset)
-  for (size_t i = 0; i < second_states.size(); i++) {
+  for (Index i = 0; i < second_states.size(); i++) {
     StateID original_from = second_states[i].getID();
     StateID new_from = second_offset + original_from;
 

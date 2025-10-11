@@ -25,14 +25,16 @@ int RegexPreprocessor::precedence(char op) {
   }
 }
 
+bool RegexPreprocessor::isRightAssociative(char op) {
+  return op == '?' or op == '+' or op == '*';
+}
 bool RegexPreprocessor::isLeftAssociative(char op) {
-  // Kleene star is right-associative
-  return op != '?' and op != '+' and op != '*';
+  return !isRightAssociative(op);
 }
 
 String RegexPreprocessor::addConcatenationOperators(const String &regex) {
   String result;
-  for (size_t i = 0; i < regex.length(); i++) {
+  for (Index i = 0; i < regex.length(); i++) {
     char current{regex[i]};
     result += current;
     if (i + 1 < regex.length()) {

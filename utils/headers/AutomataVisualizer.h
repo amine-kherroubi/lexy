@@ -1,12 +1,12 @@
 #pragma once
 
+#include "../../automata/headers/DFA.h"
+#include "../../automata/headers/NFA.h"
 #include "../../global/types.h"
-#include "DFA.h"
-#include "NFA.h"
 #include <fstream>
 #include <sstream>
 
-class Visualizer {
+class AutomataVisualizer {
 public:
   static void visualizeNFA(const NFA &nfa, const String &dot_path,
                            const String &image_path);

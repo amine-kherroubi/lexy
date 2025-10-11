@@ -1,4 +1,6 @@
 #include "../automata/headers/State.h"
+#include <cstddef>
+#include <iterator>
 #include <map>
 #include <queue>
 #include <set>
@@ -27,3 +29,7 @@ using Alphabet = Set<Symbol>;
 
 using Superstate = Set<StateID>;
 using Closure = Set<StateID>;
+
+using Lexeme = String;
+using Index = std::size_t;
+using Size = std::size_t;

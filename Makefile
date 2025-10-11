@@ -1,7 +1,15 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -I.
+CXXFLAGS = -std=c++20 -Wall -I.
 
-SRCS = main.cpp automata/NFA.cpp automata/DFA.cpp automata/RegexPreprocessor.cpp automata/RegexToNFA.cpp automata/NFADeterminizer.cpp automata/DFAMinimizer.cpp automata/Visualizer.cpp
+SRCS = main.cpp \
+       automata/NFA.cpp \
+       automata/DFA.cpp \
+       automata/RegexPreprocessor.cpp \
+       automata/RegexToNFA.cpp \
+       automata/NFADeterminizer.cpp \
+       automata/DFAMinimizer.cpp \
+       automata/Visualizer.cpp
+
 OBJS = $(SRCS:.cpp=.o)
 TARGET = main.exe
 

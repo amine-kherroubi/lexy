@@ -73,7 +73,7 @@ DFA DFAMinimizer::minimize(const DFA &dfa) {
           // Find which partition contains next_state
           int target_partition_index = -1;
           if (next_state != -1) {
-            for (size_t i = 0; i < partitions.size(); i++) {
+            for (Index i = 0; i < partitions.size(); i++) {
               if (partitions[i].find(next_state) != partitions[i].end()) {
                 target_partition_index = static_cast<int>(i);
                 break;
@@ -106,7 +106,7 @@ DFA DFAMinimizer::minimize(const DFA &dfa) {
   // Build the minimized DFA
   // Create mapping from old state ID to new partition ID
   Map<StateID, StateID> old_to_new_state;
-  for (size_t i = 0; i < partitions.size(); i++) {
+  for (Index i = 0; i < partitions.size(); i++) {
     for (StateID old_id : partitions[i]) {
       old_to_new_state[old_id] = static_cast<StateID>(i);
     }
@@ -120,7 +120,7 @@ DFA DFAMinimizer::minimize(const DFA &dfa) {
   States minimized_states;
   StateIDs minimized_accepting_ids;
 
-  for (size_t i = 0; i < partitions.size(); i++) {
+  for (Index i = 0; i < partitions.size(); i++) {
     minimized_states.push_back(State{static_cast<int>(i)});
 
     // Check if this partition contains an accepting state
@@ -143,7 +143,7 @@ DFA DFAMinimizer::minimize(const DFA &dfa) {
   minimized_dfa.resizeTransitions(partitions.size());
 
   // Build transitions using a representative from each partition
-  for (size_t i = 0; i < partitions.size(); i++) {
+  for (Index i = 0; i < partitions.size(); i++) {
     StateID representative = *partitions[i].begin();
 
     for (Symbol symbol : alphabet) {

@@ -1,7 +1,7 @@
 #include "automata/headers/DFAMinimizer.h"
 #include "automata/headers/NFADeterminizer.h"
 #include "automata/headers/RegexToNFA.h"
-#include "automata/headers/Visualizer.h"
+#include "utils/headers/AutomataVisualizer.h"
 #include <iostream>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -38,20 +38,20 @@ int main(int argc, char *argv[]) {
     NFA nfa = RegexToNFA::convert(regex);
     cout << "\nNFA created with " << nfa.getStates().size() << " states"
          << endl;
-    Visualizer::visualizeNFA(nfa, "graphviz/nfa", "images/nfa");
+    AutomataVisualizer::visualizeNFA(nfa, "graphviz/nfa", "images/nfa");
 
     // Convert NFA to DFA
     DFA dfa = NFADeterminizer::determinize(nfa);
     cout << "\nDFA created with " << dfa.getStates().size() << " states"
          << endl;
-    Visualizer::visualizeDFA(dfa, "graphviz/dfa", "images/dfa");
+    AutomataVisualizer::visualizeDFA(dfa, "graphviz/dfa", "images/dfa");
 
     // Minimize DFA
     dfa = DFAMinimizer::minimize(dfa);
     cout << "\nMinimized DFA created with " << dfa.getStates().size()
          << " states" << endl;
-    Visualizer::visualizeDFA(dfa, "graphviz/minimized_dfa",
-                             "images/minimized_dfa");
+    AutomataVisualizer::visualizeDFA(dfa, "graphviz/minimized_dfa",
+                                     "images/minimized_dfa");
 
     cout << "\nAll visualizations generated successfully!" << endl;
     cout << "DOT files saved in: graphviz/" << endl;

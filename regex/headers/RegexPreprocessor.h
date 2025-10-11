@@ -13,5 +13,6 @@ private:
   static bool isOperator(char c);
   static bool isOperand(char c);
   static int precedence(char op);
+  static bool isRightAssociative(char op);
   static bool isLeftAssociative(char op);
 };

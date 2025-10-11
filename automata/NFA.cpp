@@ -8,7 +8,7 @@ void NFA::addEpsilonTransition(StateID from, StateID to) {
   epsilon_transitions[from].push_back(to);
 }
 
-void NFA::resizeTransitions(size_t new_size) {
+void NFA::resizeTransitions(Size new_size) {
   transitions.resize(new_size);
   epsilon_transitions.resize(new_size);
 }
@@ -18,11 +18,11 @@ StateIDs NFA::getNextStateIDs(StateID from, Symbol symbol) const {
     return StateIDs();
   }
 
-  auto it = transitions[from].find(symbol);
-  if (it == transitions[from].end()) {
+  auto iterator = transitions[from].find(symbol);
+  if (iterator == transitions[from].end()) {
     return StateIDs();
   }
-  return it->second;
+  return iterator->second;
 }
 
 StateIDs NFA::getEpsilonNextStatesIDs(StateID from) const {

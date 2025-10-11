@@ -1,10 +1,9 @@
-#include "headers/Visualizer.h"
-#include <cstdlib>
+#include "headers/AutomataVisualizer.h"
 #include <iostream>
 
 using namespace std;
 
-String Visualizer::escapeLabel(Symbol symbol) {
+String AutomataVisualizer::escapeLabel(Symbol symbol) {
   if (symbol == '"')
     return "\\\"";
   if (symbol == '\\')
@@ -16,8 +15,8 @@ String Visualizer::escapeLabel(Symbol symbol) {
   return String(1, symbol);
 }
 
-void Visualizer::generateDotFile(const String &dot_content,
-                                 const String &filename) {
+void AutomataVisualizer::generateDotFile(const String &dot_content,
+                                         const String &filename) {
   ofstream file(filename);
   if (!file.is_open()) {
     cerr << "Error: Could not create file " << filename << endl;
@@ -28,9 +27,9 @@ void Visualizer::generateDotFile(const String &dot_content,
   cout << "Generated DOT file: " << filename << endl;
 }
 
-void Visualizer::renderDotFile(const String &dot_filename,
-                               const String &image_filename,
-                               const String &output_format) {
+void AutomataVisualizer::renderDotFile(const String &dot_filename,
+                                       const String &image_filename,
+                                       const String &output_format) {
   String output_file = image_filename + "." + output_format;
   String command =
       "dot -T" + output_format + " " + dot_filename + " -o " + output_file;
@@ -45,8 +44,8 @@ void Visualizer::renderDotFile(const String &dot_filename,
   }
 }
 
-void Visualizer::visualizeNFA(const NFA &nfa, const String &dot_path,
-                              const String &image_path) {
+void AutomataVisualizer::visualizeNFA(const NFA &nfa, const String &dot_path,
+                                      const String &image_path) {
   ostringstream dot;
 
   dot << "digraph NFA {\n";
@@ -97,8 +96,8 @@ void Visualizer::visualizeNFA(const NFA &nfa, const String &dot_path,
   renderDotFile(dot_filename, image_path);
 }
 
-void Visualizer::visualizeDFA(const DFA &dfa, const String &dot_path,
-                              const String &image_path) {
+void AutomataVisualizer::visualizeDFA(const DFA &dfa, const String &dot_path,
+                                      const String &image_path) {
   ostringstream dot;
 
   dot << "digraph DFA {\n";
