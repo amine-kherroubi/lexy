@@ -7,7 +7,7 @@
 #include <vector>
 
 DFA DFAMinimizer::minimize(const DFA &dfa) {
-  // Step 0: Find reachable states
+  // Find reachable states
   std::set<StateID> reachable;
   std::queue<StateID> to_visit;
 
@@ -30,7 +30,7 @@ DFA DFAMinimizer::minimize(const DFA &dfa) {
     }
   }
 
-  // Step 1: Create initial partitions (accepting vs non-accepting)
+  // Create initial partitions (accepting vs non-accepting)
   // Only include reachable states
   std::vector<Superstate> partitions;
   Superstate nonaccepting_partition;
@@ -57,7 +57,7 @@ DFA DFAMinimizer::minimize(const DFA &dfa) {
     partitions.push_back(accepting_partition);
   }
 
-  // Step 2: Refine partitions until no more splits occur
+  // Refine partitions until no more splits occur
   bool changed = true;
   while (changed) {
     changed = false;
@@ -107,7 +107,7 @@ DFA DFAMinimizer::minimize(const DFA &dfa) {
     partitions = new_partitions;
   }
 
-  // Step 3: Build the minimized DFA
+  // Build the minimized DFA
   // Create mapping from old state ID to new partition ID
   std::map<StateID, StateID> old_to_new_state;
   for (size_t i = 0; i < partitions.size(); i++) {
