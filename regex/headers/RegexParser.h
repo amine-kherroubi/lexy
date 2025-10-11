@@ -52,7 +52,8 @@ private:
   int parseNumber();
 
 public:
-  explicit RegexParser(RegexScanner &scanner);
+  RegexParser(RegexScanner &scanner)
+      : scanner(scanner), currentToken(RegexTokenType::INVALID_TOKEN, "") {}
 
   Pointer<RegexASTNode> parse();
 };

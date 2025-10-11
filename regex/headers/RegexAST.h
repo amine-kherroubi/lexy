@@ -63,3 +63,13 @@ public:
 
   QuestionNode(Pointer<RegexASTNode> c) : child(std::move(c)) {}
 };
+
+class RangeNode : public RegexASTNode {
+public:
+  Pointer<RegexASTNode> child;
+  int min;
+  int max; // -1 means unbounded
+
+  RangeNode(Pointer<RegexASTNode> c, int min_val, int max_val)
+      : child(std::move(c)), min(min_val), max(max_val) {}
+};
