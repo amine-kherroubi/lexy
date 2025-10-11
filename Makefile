@@ -14,6 +14,7 @@ $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJS) $(TARGET) *.dot *.png *.pdf *.svg
+	rm -f $(OBJS) $(TARGET)
+	rm -rf graphviz/ images/
 
 .PHONY: all clean

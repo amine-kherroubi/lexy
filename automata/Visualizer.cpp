@@ -29,16 +29,15 @@ void Visualizer::generateDotFile(const String &dot_content,
 }
 
 void Visualizer::renderDotFile(const String &dot_filename,
+                               const String &image_filename,
                                const String &output_format) {
-  String output_filename =
-      dot_filename.substr(0, dot_filename.find_last_of('.')) + "." +
-      output_format;
+  String output_file = image_filename + "." + output_format;
   String command =
-      "dot -T" + output_format + " " + dot_filename + " -o " + output_filename;
+      "dot -T" + output_format + " " + dot_filename + " -o " + output_file;
 
   int result = system(command.c_str());
   if (result == 0) {
-    cout << "Rendered visualization: " << output_filename << endl;
+    cout << "Rendered visualization: " << output_file << endl;
   } else {
     cerr << "Error: Failed to render with Graphviz. Make sure 'dot' is "
             "installed."
@@ -46,7 +45,8 @@ void Visualizer::renderDotFile(const String &dot_filename,
   }
 }
 
-void Visualizer::visualizeNFA(const NFA &nfa, const String &filename) {
+void Visualizer::visualizeNFA(const NFA &nfa, const String &dot_path,
+                              const String &image_path) {
   ostringstream dot;
 
   dot << "digraph NFA {\n";
@@ -92,12 +92,13 @@ void Visualizer::visualizeNFA(const NFA &nfa, const String &filename) {
 
   dot << "}\n";
 
-  String dot_filename = filename + ".dot";
+  String dot_filename = dot_path + ".dot";
   generateDotFile(dot.str(), dot_filename);
-  renderDotFile(dot_filename);
+  renderDotFile(dot_filename, image_path);
 }
 
-void Visualizer::visualizeDFA(const DFA &dfa, const String &filename) {
+void Visualizer::visualizeDFA(const DFA &dfa, const String &dot_path,
+                              const String &image_path) {
   ostringstream dot;
 
   dot << "digraph DFA {\n";
@@ -136,7 +137,7 @@ void Visualizer::visualizeDFA(const DFA &dfa, const String &filename) {
 
   dot << "}\n";
 
-  String dot_filename = filename + ".dot";
+  String dot_filename = dot_path + ".dot";
   generateDotFile(dot.str(), dot_filename);
-  renderDotFile(dot_filename);
+  renderDotFile(dot_filename, image_path);
 }

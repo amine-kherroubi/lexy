@@ -40,11 +40,6 @@
 # debug information files
 *.dwo
 
-# Graphviz files
-*.dot
-*.png
-*.pdf
-*.svg
-*.jpg
-*.ps
-*.eps
+# Output folders
+graphviz/
+images/
