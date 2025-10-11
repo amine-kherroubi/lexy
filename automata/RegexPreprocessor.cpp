@@ -22,7 +22,10 @@ int RegexPreprocessor::precedence(char op) {
   }
 }
 
-bool RegexPreprocessor::isLeftAssociative(char op) { return op != '*'; }
+bool RegexPreprocessor::isLeftAssociative(char op) {
+  // Kleene star is right-associative
+  return op != '*';
+}
 
 String RegexPreprocessor::addConcatenationOperators(const String &regex) {
   String result;

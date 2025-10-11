@@ -5,7 +5,7 @@
 #include <iostream>
 
 int main() {
-  String regex = "a|b";
+  String regex = "(a|b)*|c*|d";
   std::cout << "Converting regex: " << regex << std::endl;
 
   // Convert regex to NFA

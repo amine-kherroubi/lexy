@@ -104,7 +104,7 @@ NFA RegexToNFA::alternate(const NFA &first_nfa, const NFA &second_nfa) {
 
   // Build accepting states
   StateIDs new_accepting_ids;
-  
+
   // Add first NFA accepting states (shifted by 1)
   const StateIDs &first_accepting = first_nfa.getAcceptingStateIDs();
   for (StateID id : first_accepting) {
@@ -157,7 +157,8 @@ NFA RegexToNFA::alternate(const NFA &first_nfa, const NFA &second_nfa) {
     }
 
     // Copy epsilon transitions
-    StateIDs epsilon_targets = second_nfa.getEpsilonNextStatesIDs(original_from);
+    StateIDs epsilon_targets =
+        second_nfa.getEpsilonNextStatesIDs(original_from);
     for (StateID to : epsilon_targets) {
       result.addEpsilonTransition(new_from, second_offset + to);
     }
@@ -188,15 +189,13 @@ NFA RegexToNFA::kleeneStar(const NFA &nfa) {
     }
   }
 
-  // Make start state accepting (for empty string)
+  // Make start state accepting (for empty string) only if not already
   if (!start_is_accepting) {
     accepting_ids.push_back(start_state_id);
   }
 
-  // Add epsilon transitions from accepting states back to start
-  // Make a copy to avoid modifying the list we're iterating over
-  StateIDs accepting_copy = accepting_ids;
-  for (StateID accepting_id : accepting_copy) {
+  // Add epsilon transitions from all accepting states back to start
+  for (StateID accepting_id : accepting_ids) {
     if (accepting_id != start_state_id) {
       result.addEpsilonTransition(accepting_id, start_state_id);
     }

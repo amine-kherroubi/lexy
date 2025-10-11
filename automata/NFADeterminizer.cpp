@@ -31,6 +31,11 @@ Closure NFADeterminizer::epsilonClosure(const NFA &nfa,
                                         const Superstate &superstate) {
   Closure closure;
 
+  // Handle empty superstate
+  if (superstate.empty()) {
+    return closure;
+  }
+
   for (StateID state_id : superstate) {
     Closure subclosure = epsilonClosure(nfa, state_id);
     closure.insert(subclosure.begin(), subclosure.end());
