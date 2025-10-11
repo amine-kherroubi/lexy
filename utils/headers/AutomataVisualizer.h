@@ -8,16 +8,12 @@
 
 class AutomataVisualizer {
 public:
-  static void visualizeNFA(const NFA &nfa, const String &dot_path,
-                           const String &image_path);
-  static void visualizeDFA(const DFA &dfa, const String &dot_path,
-                           const String &image_path);
+  static void visualizeNFA(const NFA &, const String &, const String &);
+  static void visualizeDFA(const DFA &, const String &, const String &);
 
 private:
-  static String escapeLabel(Symbol symbol);
-  static void generateDotFile(const String &dot_content,
-                              const String &filename);
-  static void renderDotFile(const String &dot_filename,
-                            const String &image_filename,
-                            const String &output_format = "png");
+  static String escapeLabel(Symbol);
+  static void generateDotFile(const String &, const String &);
+  static void renderDotFile(const String &, const String &,
+                            const String & = "png");
 };

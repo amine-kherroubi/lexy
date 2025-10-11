@@ -30,6 +30,7 @@ public:
   // Setters
   void setStartStateID(StateID id) { this->start_state_id = id; }
 
+  // Others
   bool isAccepting(StateID id) const {
     for (StateID state_id : accepting_state_ids) {
       if (state_id == id)

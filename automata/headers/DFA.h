@@ -13,8 +13,8 @@ public:
       : FA(alphabet, states, accepting_state_ids, start_state_id),
         transitions(states.size()) {}
 
-  void addTransition(StateID from, Symbol symbol, StateID to);
-  void resizeTransitions(Size new_size);
+  void addTransition(StateID, Symbol, StateID);
+  void resizeTransitions(Size);
 
-  StateID getNextState(StateID from, Symbol symbol) const;
+  StateID getNextState(StateID, Symbol) const;
 };

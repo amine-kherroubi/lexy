@@ -5,7 +5,7 @@
 
 class DFAMinimizer {
 public:
-  static DFA minimize(const DFA &dfa);
+  static DFA minimize(const DFA &);
 
 private:
 };

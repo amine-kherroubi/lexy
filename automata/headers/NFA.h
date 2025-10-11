@@ -14,11 +14,11 @@ public:
       : FA(alphabet, states, accepting_state_ids, start_state_id),
         transitions(states.size()), epsilon_transitions(states.size()) {}
 
-  void addTransition(StateID from, Symbol symbol, StateID to);
-  void addEpsilonTransition(StateID from, StateID to);
-  void resizeTransitions(Size new_size);
+  void addTransition(StateID, Symbol, StateID);
+  void addEpsilonTransition(StateID, StateID);
+  void resizeTransitions(Size);
 
-  StateIDs getNextStateIDs(StateID from, Symbol symbol) const;
-  StateIDs getEpsilonNextStatesIDs(StateID from) const;
-  Symbols getSymbols(StateID from) const;
+  StateIDs getNextStateIDs(StateID, Symbol) const;
+  StateIDs getEpsilonNextStatesIDs(StateID) const;
+  Symbols getSymbols(StateID) const;
 };

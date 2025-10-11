@@ -5,11 +5,11 @@
 
 class RegexToNFA {
 public:
-  static NFA convert(const String &regex);
+  static NFA convert(const String &);
 
 private:
-  static NFA buildForSymbol(Symbol c);
-  static NFA concatenate(const NFA &first_nfa, const NFA &second_nfa);
-  static NFA alternate(const NFA &first_nfa, const NFA &second_nfa);
-  static NFA kleeneStar(const NFA &nfa, bool non_empty = false);
+  static NFA buildForSymbol(Symbol);
+  static NFA concatenate(const NFA &, const NFA &);
+  static NFA alternate(const NFA &, const NFA &);
+  static NFA kleeneStar(const NFA &, bool = false);
 };

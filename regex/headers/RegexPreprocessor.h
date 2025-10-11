@@ -4,15 +4,15 @@
 
 class RegexPreprocessor {
 public:
-  static String preprocess(const String &regex);
+  static String preprocess(const String &);
 
 private:
-  static String addConcatenationOperators(const String &regex);
-  static String shuntingYard(const String &regex);
+  static String addConcatenationOperators(const String &);
+  static String shuntingYard(const String &);
 
-  static bool isOperator(char c);
-  static bool isOperand(char c);
-  static int precedence(char op);
-  static bool isRightAssociative(char op);
-  static bool isLeftAssociative(char op);
+  static bool isOperator(char);
+  static bool isOperand(char);
+  static int precedence(char);
+  static bool isRightAssociative(char);
+  static bool isLeftAssociative(char);
 };
