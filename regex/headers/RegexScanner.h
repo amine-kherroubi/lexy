@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../../global/types.h"
 #include "RegexToken.h"
 

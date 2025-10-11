@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <iterator>
 #include <map>
+#include <memory>
 #include <queue>
 #include <set>
 #include <stack>
@@ -16,6 +17,7 @@ template <typename Tp> using Stack = std::stack<Tp>;
 template <typename Key, typename Value> using Map = std::map<Key, Value>;
 template <typename Key, typename Value>
 using UnorderedMap = std::unordered_map<Key, Value>;
+template <typename Tp> using Pointer = std::unique_ptr<Tp>;
 
 using String = std::string;
 

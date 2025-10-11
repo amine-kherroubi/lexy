@@ -1,13 +1,15 @@
+#pragma once
+
 #include "../../global/types.h"
-#include "RegexToken.h"
+#include "RegexAST.h"
+#include "RegexScanner.h"
 
 class RegexParser {
 private:
-  String regex;
-  Index position = 0;
+  RegexScanner &scanner;
 
 public:
-  RegexParser(const String &regex) : regex(regex) {}
+  explicit RegexParser(RegexScanner &scanner) : scanner(scanner) {}
 
-  RegexToken getNextToken();
+  Pointer<RegexASTNode> parse();
 };

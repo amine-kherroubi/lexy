@@ -7,7 +7,7 @@ private:
   StateID id;
 
 public:
-  State(StateID id) : id{id} {}
+  State(StateID id) : id(id) {}
 
   StateID getID() const { return id; }
   void setID(StateID id) { this->id = id; }
