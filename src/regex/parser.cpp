@@ -1,8 +1,6 @@
 #include "../../include/regex/parser.hpp"
 #include <stdexcept>
 
-using enum RegexTokenType;
-
 void RegexParser::consume(RegexTokenType expected) {
   if (currentToken.getType() != expected) {
     throw std::runtime_error(
@@ -19,7 +17,7 @@ Pointer<RegexASTNode> RegexParser::parse() {
 
   Pointer<RegexASTNode> result = parseAlternation();
 
-  if (currentToken.getType() != END_OF_INPUT) {
+  if (currentToken.getType() != RegexTokenType::END_OF_INPUT) {
     throw std::runtime_error("Unexpected tokens after parsing: '" +
                              currentToken.getLexeme() + "'");
   }
@@ -30,8 +28,8 @@ Pointer<RegexASTNode> RegexParser::parse() {
 Pointer<RegexASTNode> RegexParser::parseAlternation() {
   Pointer<RegexASTNode> left = parseConcatenation();
 
-  while (currentToken.getType() == ALTERNATION) {
-    consume(ALTERNATION);
+  while (currentToken.getType() == RegexTokenType::ALTERNATION) {
+    consume(RegexTokenType::ALTERNATION);
     Pointer<RegexASTNode> right = parseConcatenation();
     left = std::make_unique<AltNode>(std::move(left), std::move(right));
   }
@@ -44,9 +42,9 @@ Pointer<RegexASTNode> RegexParser::parseConcatenation() {
 
   // Continue concatenating while we have atoms (but not alternation or closing
   // parens)
-  while (currentToken.getType() != END_OF_INPUT &&
-         currentToken.getType() != ALTERNATION &&
-         currentToken.getType() != RIGHT_PAREN) {
+  while (currentToken.getType() != RegexTokenType::END_OF_INPUT &&
+         currentToken.getType() != RegexTokenType::ALTERNATION &&
+         currentToken.getType() != RegexTokenType::RIGHT_PAREN) {
 
     Pointer<RegexASTNode> right = parseRepetition();
     left = std::make_unique<ConcatNode>(std::move(left), std::move(right));
@@ -61,24 +59,24 @@ Pointer<RegexASTNode> RegexParser::parseRepetition() {
   // Check for quantifiers
   RegexTokenType type = currentToken.getType();
 
-  if (type == STAR) {
-    consume(STAR);
+  if (type == RegexTokenType::STAR) {
+    consume(RegexTokenType::STAR);
     return std::make_unique<StarNode>(std::move(atom));
-  } else if (type == PLUS) {
-    consume(PLUS);
+  } else if (type == RegexTokenType::PLUS) {
+    consume(RegexTokenType::PLUS);
     return std::make_unique<PlusNode>(std::move(atom));
-  } else if (type == QUESTION) {
-    consume(QUESTION);
+  } else if (type == RegexTokenType::QUESTION) {
+    consume(RegexTokenType::QUESTION);
     return std::make_unique<QuestionNode>(std::move(atom));
-  } else if (type == LEFT_BRACE) {
+  } else if (type == RegexTokenType::LEFT_BRACE) {
     // Range quantifier {n,m}
-    consume(LEFT_BRACE);
+    consume(RegexTokenType::LEFT_BRACE);
     int min = parseNumber();
     int max = min;
 
-    if (currentToken.getType() == COMMA) {
-      consume(COMMA);
-      if (currentToken.getType() == RIGHT_BRACE) {
+    if (currentToken.getType() == RegexTokenType::COMMA) {
+      consume(RegexTokenType::COMMA);
+      if (currentToken.getType() == RegexTokenType::RIGHT_BRACE) {
         // {n,} - n or more times
         max = -1; // -1 indicates unbounded
       } else {
@@ -86,7 +84,7 @@ Pointer<RegexASTNode> RegexParser::parseRepetition() {
       }
     }
 
-    consume(RIGHT_BRACE);
+    consume(RegexTokenType::RIGHT_BRACE);
 
     if (min == 0 && max == 0) {
       // {0,0} - matches empty string (epsilon)
@@ -118,13 +116,13 @@ Pointer<RegexASTNode> RegexParser::parseRepetition() {
 Pointer<RegexASTNode> RegexParser::parseAtom() {
   RegexTokenType type = currentToken.getType();
 
-  if (type == CHARACTER) {
+  if (type == RegexTokenType::CHARACTER) {
     char c = currentToken.getLexeme()[0];
-    consume(CHARACTER);
+    consume(RegexTokenType::CHARACTER);
     return std::make_unique<CharNode>(c);
-  } else if (type == ESCAPED_CHAR) {
+  } else if (type == RegexTokenType::ESCAPED_CHAR) {
     String lexeme = currentToken.getLexeme();
-    consume(ESCAPED_CHAR);
+    consume(RegexTokenType::ESCAPED_CHAR);
 
     // Handle escaped character (lexeme is like "\n" or "\t")
     if (lexeme.length() == 2) {
@@ -171,12 +169,12 @@ Pointer<RegexASTNode> RegexParser::parseAtom() {
       }
     }
     throw std::runtime_error("Invalid escaped character: " + lexeme);
-  } else if (type == DOT) {
-    consume(DOT);
+  } else if (type == RegexTokenType::DOT) {
+    consume(RegexTokenType::DOT);
     return std::make_unique<DotNode>();
-  } else if (type == LEFT_BRACKET) {
+  } else if (type == RegexTokenType::LEFT_BRACKET) {
     return parseSet();
-  } else if (type == LEFT_PAREN) {
+  } else if (type == RegexTokenType::LEFT_PAREN) {
     return parseGroup();
   }
 
@@ -185,30 +183,30 @@ Pointer<RegexASTNode> RegexParser::parseAtom() {
 }
 
 Pointer<RegexASTNode> RegexParser::parseSet() {
-  consume(LEFT_BRACKET);
+  consume(RegexTokenType::LEFT_BRACKET);
 
   bool negated = false;
-  if (currentToken.getType() == CARET) {
+  if (currentToken.getType() == RegexTokenType::CARET) {
     negated = true;
-    consume(CARET);
+    consume(RegexTokenType::CARET);
   }
 
   auto charSet = std::make_unique<CharSetNode>(negated);
 
   // Parse set items
-  while (currentToken.getType() != RIGHT_BRACKET &&
-         currentToken.getType() != END_OF_INPUT) {
+  while (currentToken.getType() != RegexTokenType::RIGHT_BRACKET &&
+         currentToken.getType() != RegexTokenType::END_OF_INPUT) {
 
     char startChar;
 
-    if (currentToken.getType() == CHARACTER) {
+    if (currentToken.getType() == RegexTokenType::CHARACTER) {
       startChar = currentToken.getLexeme()[0];
-      consume(CHARACTER);
-    } else if (currentToken.getType() == ESCAPED_CHAR) {
+      consume(RegexTokenType::CHARACTER);
+    } else if (currentToken.getType() == RegexTokenType::ESCAPED_CHAR) {
       String lexeme = currentToken.getLexeme();
       if (lexeme.length() == 2) {
         startChar = lexeme[1];
-        consume(ESCAPED_CHAR);
+        consume(RegexTokenType::ESCAPED_CHAR);
       } else {
         throw std::runtime_error("Invalid escaped character in set");
       }
@@ -217,18 +215,18 @@ Pointer<RegexASTNode> RegexParser::parseSet() {
     }
 
     // Check for range (e.g., a-z)
-    if (currentToken.getType() == HYPHEN) {
-      consume(HYPHEN);
+    if (currentToken.getType() == RegexTokenType::HYPHEN) {
+      consume(RegexTokenType::HYPHEN);
 
       char endChar;
-      if (currentToken.getType() == CHARACTER) {
+      if (currentToken.getType() == RegexTokenType::CHARACTER) {
         endChar = currentToken.getLexeme()[0];
-        consume(CHARACTER);
-      } else if (currentToken.getType() == ESCAPED_CHAR) {
+        consume(RegexTokenType::CHARACTER);
+      } else if (currentToken.getType() == RegexTokenType::ESCAPED_CHAR) {
         String lexeme = currentToken.getLexeme();
         if (lexeme.length() == 2) {
           endChar = lexeme[1];
-          consume(ESCAPED_CHAR);
+          consume(RegexTokenType::ESCAPED_CHAR);
         } else {
           throw std::runtime_error("Invalid escaped character in range");
         }
@@ -247,27 +245,27 @@ Pointer<RegexASTNode> RegexParser::parseSet() {
     }
   }
 
-  consume(RIGHT_BRACKET);
+  consume(RegexTokenType::RIGHT_BRACKET);
   return charSet;
 }
 
 Pointer<RegexASTNode> RegexParser::parseGroup() {
-  consume(LEFT_PAREN);
+  consume(RegexTokenType::LEFT_PAREN);
   Pointer<RegexASTNode> inner = parseAlternation();
-  consume(RIGHT_PAREN);
+  consume(RegexTokenType::RIGHT_PAREN);
   return inner;
 }
 
 int RegexParser::parseNumber() {
-  if (currentToken.getType() != CHARACTER) {
+  if (currentToken.getType() != RegexTokenType::CHARACTER) {
     throw std::runtime_error("Expected number");
   }
 
   String numStr;
-  while (currentToken.getType() == CHARACTER &&
+  while (currentToken.getType() == RegexTokenType::CHARACTER &&
          std::isdigit(currentToken.getLexeme()[0])) {
     numStr += currentToken.getLexeme();
-    consume(CHARACTER);
+    consume(RegexTokenType::CHARACTER);
   }
 
   if (numStr.empty()) {
