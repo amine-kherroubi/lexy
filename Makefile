@@ -7,12 +7,13 @@ SRCS = main.cpp \
        src/automata/dfa.cpp \
        src/automata/nfa_determinizer.cpp \
        src/automata/dfa_minimizer.cpp \
+       src/automata/thompson_construction.cpp \
        src/regex/scanner.cpp \
        src/regex/parser.cpp \
        src/regex/preprocessor.cpp \
        src/regex/ast_to_nfa.cpp \
        src/utils/automata_visualizer.cpp \
-       src/utils/ast_visualizer.cpp
+       src/utils/regex_ast_visualizer.cpp
 
 # Object files (in build directory)
 BUILD_DIR = build

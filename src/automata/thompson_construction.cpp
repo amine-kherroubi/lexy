@@ -15,17 +15,23 @@ NFA ThompsonConstruction::buildForCharSet(const Set<char> &chars) {
     throw std::runtime_error("Cannot build NFA for empty character set");
   }
 
-  // Build as alternation of all characters
-  auto it = chars.begin();
-  NFA result = buildForSymbol(*it);
-  ++it;
+  // Instead of alternating N NFAs, create one NFA with N parallel transitions
 
-  for (; it != chars.end(); ++it) {
-    NFA charNFA = buildForSymbol(*it);
-    result = alternate(result, charNFA);
+  const States states{State{0}, State{1}};
+  const StateIDs accepting_state_ids{1};
+
+  // Convert Set<char> to Alphabet (which is also Set<char>)
+  Alphabet alphabet(chars.begin(), chars.end());
+
+  NFA nfa(alphabet, states, accepting_state_ids, 0);
+  nfa.resizeTransitions(2);
+
+  // Add a transition for each character in the set
+  for (char c : chars) {
+    nfa.addTransition(0, c, 1);
   }
 
-  return result;
+  return nfa;
 }
 
 NFA ThompsonConstruction::concatenate(const NFA &first_nfa,
