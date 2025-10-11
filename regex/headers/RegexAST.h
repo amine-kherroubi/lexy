@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RegexToken.h"
+#include "../../global/types.h"
 #include <memory>
 
 class RegexASTNode {
@@ -8,22 +8,58 @@ public:
   virtual ~RegexASTNode() = default;
 };
 
-class CharacterNode : public RegexASTNode {
+class CharNode : public RegexASTNode {
 public:
   char value;
-  CharacterNode(char v) : value(v) {}
+  CharNode(char v) : value(v) {}
 };
 
-class UnaryNode : public RegexASTNode {
+class DotNode : public RegexASTNode {};
+
+class CharSetNode : public RegexASTNode {
 public:
-  Pointer<RegexASTNode> operand;
-  UnaryNode(Pointer<RegexASTNode> op) : operand(std::move(op)) {}
+  bool negated;
+  Vector<char> chars;
+  Vector<std::pair<char, char>> ranges;
+
+  CharSetNode(bool neg = false) : negated(neg) {}
 };
 
-class BinaryNode : public RegexASTNode {
+class ConcatNode : public RegexASTNode {
 public:
   Pointer<RegexASTNode> left;
   Pointer<RegexASTNode> right;
-  BinaryNode(Pointer<RegexASTNode> l, Pointer<RegexASTNode> r)
+
+  ConcatNode(Pointer<RegexASTNode> l, Pointer<RegexASTNode> r)
       : left(std::move(l)), right(std::move(r)) {}
+};
+
+class AltNode : public RegexASTNode {
+public:
+  Pointer<RegexASTNode> left;
+  Pointer<RegexASTNode> right;
+
+  AltNode(Pointer<RegexASTNode> l, Pointer<RegexASTNode> r)
+      : left(std::move(l)), right(std::move(r)) {}
+};
+
+class StarNode : public RegexASTNode {
+public:
+  Pointer<RegexASTNode> child;
+
+  StarNode(Pointer<RegexASTNode> c) : child(std::move(c)) {}
+};
+
+class PlusNode : public RegexASTNode {
+public:
+  Pointer<RegexASTNode> child;
+
+  PlusNode(Pointer<RegexASTNode> c) : child(std::move(c)) {}
+};
+
+class QuestionNode : public RegexASTNode {
+public:
+  Pointer<RegexASTNode> child;
+
+  QuestionNode(Pointer<RegexASTNode> c) : child(std::move(c)) {}
 };

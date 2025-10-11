@@ -2,7 +2,7 @@
 
 #include "../../global/types.h"
 
-enum class RegexTokenCategory {
+enum class RegexTokenType {
   ALTERNATION,
   DOT,
   STAR,
@@ -15,7 +15,6 @@ enum class RegexTokenCategory {
   LEFT_BRACE,
   RIGHT_BRACE,
   CARET,
-  DOLLAR,
   BACKSLASH,
   HYPHEN,
   COMMA,
@@ -27,13 +26,12 @@ enum class RegexTokenCategory {
 
 class RegexToken {
 private:
-  RegexTokenCategory category;
+  RegexTokenType type;
   Lexeme lexeme;
 
 public:
-  RegexToken(RegexTokenCategory category, Lexeme lexeme)
-      : category(category), lexeme(lexeme) {}
+  RegexToken(RegexTokenType type, Lexeme lexeme) : type(type), lexeme(lexeme) {}
 
-  RegexTokenCategory getCategory() const { return category; }
+  RegexTokenType getType() const { return type; }
   Lexeme getLexeme() const { return lexeme; }
 };

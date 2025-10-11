@@ -1,6 +1,6 @@
 #include "headers/RegexScanner.h"
 
-using enum RegexTokenCategory;
+using enum RegexTokenType;
 
 char RegexScanner::advance() {
   if (isAtEnd())
@@ -47,8 +47,6 @@ RegexToken RegexScanner::getNextToken() {
     return {RIGHT_BRACE, String(1, current)};
   case '^':
     return {CARET, String(1, current)};
-  case '$':
-    return {DOLLAR, String(1, current)};
   case '-':
     return {HYPHEN, String(1, current)};
   case ',':
