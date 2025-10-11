@@ -23,6 +23,7 @@ int RegexPreprocessor::precedence(char op) {
 }
 
 bool RegexPreprocessor::isLeftAssociative(char op) { return op != '*'; }
+
 String RegexPreprocessor::addConcatenationOperators(const String &regex) {
   String result;
   for (size_t i = 0; i < regex.length(); i++) {

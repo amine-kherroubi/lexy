@@ -116,6 +116,7 @@ DFA NFADeterminizer::determinize(const NFA &nfa) {
     }
   }
 
+  // Update the DFA with the final states and accepting states
   dfa.getStates() = dfa_states;
   dfa.getAcceptingStateIDs() = dfa_accepting_state_ids;
 
