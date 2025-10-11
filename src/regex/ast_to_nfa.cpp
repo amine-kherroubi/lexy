@@ -201,8 +201,7 @@ NFA RegexASTToNFA::visitRange(const RangeNode *node) {
   return result;
 }
 
-// Helper methods (same as original RegexToNFA)
-
+// Helper methods
 NFA RegexASTToNFA::buildForSymbol(Symbol c) {
   const States states{State{0}, State{1}};
   const StateIDs accepting_state_ids{1};

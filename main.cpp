@@ -1,10 +1,10 @@
-#include "automata/headers/DFAMinimizer.h"
-#include "automata/headers/NFADeterminizer.h"
-#include "regex/headers/RegexASTToNFA.h"
-#include "regex/headers/RegexParser.h"
-#include "regex/headers/RegexScanner.h"
-#include "utils/headers/AutomataVisualizer.h"
-#include "utils/headers/RegexASTVisualizer.h"
+#include "include/automata/dfa_minimizer.hpp"
+#include "include/automata/nfa_determinizer.hpp"
+#include "include/regex/ast_to_nfa.hpp"
+#include "include/regex/parser.hpp"
+#include "include/regex/scanner.hpp"
+#include "include/utils/automata_visualizer.hpp"
+#include "include/utils/regex_ast_visualizer.hpp"
 #include <iostream>
 #include <sys/stat.h>
 #include <sys/types.h>

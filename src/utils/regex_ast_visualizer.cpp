@@ -1,5 +1,7 @@
-#include "../../include/utils/ast_visualizer.hpp"
+#include "../../include/utils/regex_ast_visualizer.hpp"
+#include <fstream>
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 

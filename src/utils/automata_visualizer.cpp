@@ -1,5 +1,7 @@
 #include "../../include/utils/automata_visualizer.hpp"
+#include <fstream>
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 

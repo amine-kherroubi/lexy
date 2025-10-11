@@ -1,31 +1,59 @@
 CXX = g++
-CXXFLAGS = -std=c++20 -Wall -I.
+CXXFLAGS = -std=c++20 -Wall -Wextra -Iinclude
 
+# Source files
 SRCS = main.cpp \
-       automata/NFA.cpp \
-       automata/DFA.cpp \
-       automata/NFADeterminizer.cpp \
-       automata/DFAMinimizer.cpp \
-       regex/RegexScanner.cpp \
-       regex/RegexParser.cpp \
-       regex/RegexPreprocessor.cpp \
-       regex/RegexASTToNFA.cpp \
-       utils/AutomataVisualize.cpp \
-       utils/RegexASTVisualizer.cpp
+       src/automata/nfa.cpp \
+       src/automata/dfa.cpp \
+       src/automata/nfa_determinizer.cpp \
+       src/automata/dfa_minimizer.cpp \
+       src/regex/scanner.cpp \
+       src/regex/parser.cpp \
+       src/regex/preprocessor.cpp \
+       src/regex/ast_to_nfa.cpp \
+       src/utils/automata_visualizer.cpp \
+       src/utils/ast_visualizer.cpp
 
-OBJS = $(SRCS:.cpp=.o)
-TARGET = main.exe
+# Object files (in build directory)
+BUILD_DIR = build
+OBJS = $(SRCS:%.cpp=$(BUILD_DIR)/%.o)
 
+# Target executable
+TARGET = regex_converter
+
+# Default target
 all: $(TARGET)
 
+# Link executable
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
+	@echo "Build complete: $(TARGET)"
 
-%.o: %.cpp
+# Compile source files
+$(BUILD_DIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# Clean build artifacts
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -rf $(BUILD_DIR) $(TARGET)
 	rm -rf graphviz/ images/
 
-.PHONY: all clean
+# Clean and rebuild
+rebuild: clean all
+
+# Create output directories
+dirs:
+	@mkdir -p graphviz images
+
+# Run the program (example)
+run: $(TARGET) dirs
+	./$(TARGET) "(a|b)*c+"
+
+# Show variables (for debugging)
+debug:
+	@echo "Sources: $(SRCS)"
+	@echo "Objects: $(OBJS)"
+	@echo "Target: $(TARGET)"
+
+.PHONY: all clean rebuild dirs run debug
