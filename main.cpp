@@ -1,6 +1,8 @@
 #include "automata/headers/DFAMinimizer.h"
 #include "automata/headers/NFADeterminizer.h"
-#include "automata/headers/RegexToNFA.h"
+#include "regex/headers/RegexASTToNFA.h"
+#include "regex/headers/RegexParser.h"
+#include "regex/headers/RegexScanner.h"
 #include "utils/headers/AutomataVisualizer.h"
 #include <iostream>
 #include <sys/stat.h>
@@ -22,7 +24,7 @@ int main(int argc, char *argv[]) {
   if (argc < 2) {
     cerr << "Error: No regex pattern provided" << endl;
     cerr << "Usage: " << argv[0] << " <regex_pattern>" << endl;
-    cerr << "Example: " << argv[0] << " \"(a|b)*|c*|d\"" << endl;
+    cerr << "Example: " << argv[0] << " \"(a|b)*c+\"" << endl;
     return 1;
   }
 
@@ -34,22 +36,30 @@ int main(int argc, char *argv[]) {
   createDirectory("images");
 
   try {
-    // Convert regex to NFA
-    NFA nfa = RegexToNFA::convert(regex);
-    cout << "\nNFA created with " << nfa.getStates().size() << " states"
-         << endl;
+    // Parse regex to AST
+    cout << "\nParsing regex..." << endl;
+    RegexScanner scanner(regex);
+    RegexParser parser(scanner);
+    Pointer<RegexASTNode> ast = parser.parse();
+    cout << "AST created successfully" << endl;
+
+    // Convert AST to NFA
+    cout << "\nConverting AST to NFA..." << endl;
+    NFA nfa = RegexASTToNFA::convert(ast.get());
+    cout << "NFA created with " << nfa.getStates().size() << " states" << endl;
     AutomataVisualizer::visualizeNFA(nfa, "graphviz/nfa", "images/nfa");
 
     // Convert NFA to DFA
+    cout << "\nDeterminizing NFA to DFA..." << endl;
     DFA dfa = NFADeterminizer::determinize(nfa);
-    cout << "\nDFA created with " << dfa.getStates().size() << " states"
-         << endl;
+    cout << "DFA created with " << dfa.getStates().size() << " states" << endl;
     AutomataVisualizer::visualizeDFA(dfa, "graphviz/dfa", "images/dfa");
 
     // Minimize DFA
+    cout << "\nMinimizing DFA..." << endl;
     dfa = DFAMinimizer::minimize(dfa);
-    cout << "\nMinimized DFA created with " << dfa.getStates().size()
-         << " states" << endl;
+    cout << "Minimized DFA created with " << dfa.getStates().size() << " states"
+         << endl;
     AutomataVisualizer::visualizeDFA(dfa, "graphviz/minimized_dfa",
                                      "images/minimized_dfa");
 

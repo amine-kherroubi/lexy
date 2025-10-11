@@ -4,11 +4,13 @@ CXXFLAGS = -std=c++20 -Wall -I.
 SRCS = main.cpp \
        automata/NFA.cpp \
        automata/DFA.cpp \
-       automata/RegexPreprocessor.cpp \
-       automata/RegexToNFA.cpp \
        automata/NFADeterminizer.cpp \
        automata/DFAMinimizer.cpp \
-       automata/Visualizer.cpp
+       regex/RegexScanner.cpp \
+       regex/RegexParser.cpp \
+       regex/RegexPreprocessor.cpp \
+       regex/RegexASTToNFA.cpp \
+       utils/AutomataVisualize.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 TARGET = main.exe
