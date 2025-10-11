@@ -44,15 +44,11 @@ NFA RegexASTToNFA::visitChar(const CharNode *node) {
 
 NFA RegexASTToNFA::visitDot(const DotNode *node) {
   // The dot matches any printable ASCII character (32-126)
-  NFA result = ThompsonConstruction::buildForSymbol(' '); // Start with space
-
-  // Build alternation for all printable characters
-  for (char c = '!'; c <= '~'; c++) {
-    NFA charNFA = ThompsonConstruction::buildForSymbol(c);
-    result = ThompsonConstruction::alternate(result, charNFA);
+  Set<char> allPrintable;
+  for (char c = 32; c <= 126; c++) {
+    allPrintable.insert(c);
   }
-
-  return result;
+  return ThompsonConstruction::buildForCharSet(allPrintable);
 }
 
 NFA RegexASTToNFA::visitCharSet(const CharSetNode *node) {
@@ -86,17 +82,7 @@ NFA RegexASTToNFA::visitCharSet(const CharSetNode *node) {
     matchingChars = negatedChars;
   }
 
-  // Build NFA as alternation of all matching characters
-  auto it = matchingChars.begin();
-  NFA result = ThompsonConstruction::buildForSymbol(*it);
-  ++it;
-
-  for (; it != matchingChars.end(); ++it) {
-    NFA charNFA = ThompsonConstruction::buildForSymbol(*it);
-    result = ThompsonConstruction::alternate(result, charNFA);
-  }
-
-  return result;
+  return ThompsonConstruction::buildForCharSet(matchingChars);
 }
 
 NFA RegexASTToNFA::visitConcat(const ConcatNode *node) {
@@ -118,31 +104,12 @@ NFA RegexASTToNFA::visitStar(const StarNode *node) {
 
 NFA RegexASTToNFA::visitPlus(const PlusNode *node) {
   NFA child = visit(node->child.get());
-  return ThompsonConstruction::kleeneStar(child,
-                                          false); // Don't allow empty string
+  return ThompsonConstruction::oneOrMore(child);
 }
 
 NFA RegexASTToNFA::visitQuestion(const QuestionNode *node) {
-  // ? means 0 or 1 times
   NFA child = visit(node->child.get());
-
-  // Make the start state accepting to allow 0 occurrences
-  StateID start = child.getStartStateID();
-  StateIDs &accepting = child.getAcceptingStateIDs();
-
-  bool startIsAccepting = false;
-  for (StateID id : accepting) {
-    if (id == start) {
-      startIsAccepting = true;
-      break;
-    }
-  }
-
-  if (!startIsAccepting) {
-    accepting.push_back(start);
-  }
-
-  return child;
+  return ThompsonConstruction::optional(child);
 }
 
 NFA RegexASTToNFA::visitRange(const RangeNode *node) {
@@ -150,55 +117,34 @@ NFA RegexASTToNFA::visitRange(const RangeNode *node) {
   int min = node->min;
   int max = node->max;
 
-  if (min < 0) {
-    throw std::runtime_error("Invalid range: min cannot be negative");
+  // Handle special cases that can be converted to simpler operations
+  if (min == 0 && max == 1) {
+    // {0,1} is same as ?
+    return ThompsonConstruction::optional(child);
   }
 
-  if (max != -1 && max < min) {
-    throw std::runtime_error("Invalid range: max < min");
+  if (min == 1 && max == -1) {
+    // {1,} is same as +
+    return ThompsonConstruction::oneOrMore(child);
   }
 
-  // Build min required repetitions
+  if (min == 0 && max == -1) {
+    // {0,} is same as *
+    return ThompsonConstruction::kleeneStar(child, true);
+  }
+
+  // For all other cases, use the repeat method
   if (min == 0) {
-    throw std::runtime_error("Range with min=0 should be handled differently");
-  }
-
-  NFA result = child;
-  for (int i = 1; i < min; i++) {
-    NFA copy = child;
-    result = ThompsonConstruction::concatenate(result, copy);
-  }
-
-  // Handle the optional part (from min to max)
-  if (max == -1) {
-    // Unbounded: add star on top
-    NFA copy = child;
-    NFA starred = ThompsonConstruction::kleeneStar(copy, true);
-    result = ThompsonConstruction::concatenate(result, starred);
-  } else if (max > min) {
-    // Bounded: add optional repetitions
-    for (int i = min; i < max; i++) {
+    // {0,n} case: build optional repetitions
+    NFA result = ThompsonConstruction::optional(child);
+    for (int i = 1; i < max; i++) {
       NFA copy = child;
-
-      // Make it optional
-      StateID start = copy.getStartStateID();
-      StateIDs &accepting = copy.getAcceptingStateIDs();
-
-      bool startIsAccepting = false;
-      for (StateID id : accepting) {
-        if (id == start) {
-          startIsAccepting = true;
-          break;
-        }
-      }
-
-      if (!startIsAccepting) {
-        accepting.push_back(start);
-      }
-
-      result = ThompsonConstruction::concatenate(result, copy);
+      NFA optionalCopy = ThompsonConstruction::optional(copy);
+      result = ThompsonConstruction::concatenate(result, optionalCopy);
     }
+    return result;
   }
 
-  return result;
+  // For min >= 1, use the repeat method
+  return ThompsonConstruction::repeat(child, min, max);
 }
