@@ -1,5 +1,4 @@
 #include "headers/RegexPreprocessor.h"
-#include <stack>
 
 bool RegexPreprocessor::isOperator(char c) {
   return c == '|' || c == '.' || c == '*';
@@ -46,7 +45,7 @@ String RegexPreprocessor::addConcatenationOperators(const String &regex) {
 
 String RegexPreprocessor::shuntingYard(const String &regex) {
   String output;
-  std::stack<char> stack;
+  Stack<char> stack;
   for (char c : regex) {
     if (isOperand(c)) {
       output += c;

@@ -5,8 +5,8 @@
 
 class NFA : public FA {
 private:
-  NondeterministicTransitions transitions;
-  EpsilonTransitions epsilon_transitions;
+  Vector<UnorderedMap<Symbol, StateIDs>> transitions;
+  Vector<StateIDs> epsilon_transitions;
 
 public:
   NFA(const Alphabet &alphabet, const States &states,

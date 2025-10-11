@@ -2,6 +2,8 @@
 #include <cstdlib>
 #include <iostream>
 
+using namespace std;
+
 String Visualizer::escapeLabel(Symbol symbol) {
   if (symbol == '"')
     return "\\\"";
@@ -16,14 +18,14 @@ String Visualizer::escapeLabel(Symbol symbol) {
 
 void Visualizer::generateDotFile(const String &dot_content,
                                  const String &filename) {
-  std::ofstream file(filename);
+  ofstream file(filename);
   if (!file.is_open()) {
-    std::cerr << "Error: Could not create file " << filename << std::endl;
+    cerr << "Error: Could not create file " << filename << endl;
     return;
   }
   file << dot_content;
   file.close();
-  std::cout << "Generated DOT file: " << filename << std::endl;
+  cout << "Generated DOT file: " << filename << endl;
 }
 
 void Visualizer::renderDotFile(const String &dot_filename,
@@ -36,16 +38,16 @@ void Visualizer::renderDotFile(const String &dot_filename,
 
   int result = system(command.c_str());
   if (result == 0) {
-    std::cout << "Rendered visualization: " << output_filename << std::endl;
+    cout << "Rendered visualization: " << output_filename << endl;
   } else {
-    std::cerr << "Error: Failed to render with Graphviz. Make sure 'dot' is "
-                 "installed."
-              << std::endl;
+    cerr << "Error: Failed to render with Graphviz. Make sure 'dot' is "
+            "installed."
+         << endl;
   }
 }
 
 void Visualizer::visualizeNFA(const NFA &nfa, const String &filename) {
-  std::ostringstream dot;
+  ostringstream dot;
 
   dot << "digraph NFA {\n";
   dot << "  rankdir=LR;\n";
@@ -96,7 +98,7 @@ void Visualizer::visualizeNFA(const NFA &nfa, const String &filename) {
 }
 
 void Visualizer::visualizeDFA(const DFA &dfa, const String &filename) {
-  std::ostringstream dot;
+  ostringstream dot;
 
   dot << "digraph DFA {\n";
   dot << "  rankdir=LR;\n";

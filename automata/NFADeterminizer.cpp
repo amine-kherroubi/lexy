@@ -1,10 +1,8 @@
 #include "headers/NFADeterminizer.h"
-#include <map>
-#include <queue>
 
 Closure NFADeterminizer::epsilonClosure(const NFA &nfa, StateID state_id) {
   Closure closure;
-  std::queue<StateID> state_ids_to_process;
+  Queue<StateID> state_ids_to_process;
 
   closure.insert(state_id);
   state_ids_to_process.push(state_id);
@@ -68,8 +66,8 @@ bool NFADeterminizer::containsAcceptingState(const NFA &nfa,
 
 DFA NFADeterminizer::determinize(const NFA &nfa) {
   Superstate start_superstate = epsilonClosure(nfa, nfa.getStartStateID());
-  std::map<Superstate, StateID> superstate_to_state_id_map;
-  std::queue<Superstate> superstates_to_process;
+  Map<Superstate, StateID> superstate_to_state_id_map;
+  Queue<Superstate> superstates_to_process;
 
   States dfa_states;
   StateIDs dfa_accepting_state_ids;

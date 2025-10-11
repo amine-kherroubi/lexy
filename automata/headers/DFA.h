@@ -5,7 +5,7 @@
 
 class DFA : public FA {
 private:
-  DeterministicTransitions transitions;
+  Vector<UnorderedMap<Symbol, StateID>> transitions;
 
 public:
   DFA(const Alphabet &alphabet, const States &states,

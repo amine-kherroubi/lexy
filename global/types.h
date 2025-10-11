@@ -1,25 +1,29 @@
 #include "../automata/headers/State.h"
+#include <map>
+#include <queue>
 #include <set>
+#include <stack>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+template <typename Tp> using Vector = std::vector<Tp>;
+template <typename Tp> using Set = std::set<Tp>;
+template <typename Tp> using Queue = std::queue<Tp>;
+template <typename Tp> using Stack = std::stack<Tp>;
+template <typename Key, typename Value> using Map = std::map<Key, Value>;
+template <typename Key, typename Value>
+using UnorderedMap = std::unordered_map<Key, Value>;
+
 using String = std::string;
 
 using StateID = int;
-using StateIDs = std::vector<StateID>;
-using States = std::vector<State>;
+using StateIDs = Vector<StateID>;
+using States = Vector<State>;
 
 using Symbol = char;
-using Symbols = std::vector<Symbol>;
-using Alphabet = std::set<Symbol>;
+using Symbols = Vector<Symbol>;
+using Alphabet = Set<Symbol>;
 
-using DeterministicTransitions =
-    std::vector<std::unordered_map<Symbol, StateID>>;
-
-using NondeterministicTransitions =
-    std::vector<std::unordered_map<Symbol, StateIDs>>;
-using EpsilonTransitions = std::vector<StateIDs>;
-
-using Superstate = std::set<StateID>;
-using Closure = std::set<StateID>;
+using Superstate = Set<StateID>;
+using Closure = Set<StateID>;

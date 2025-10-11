@@ -1,15 +1,11 @@
 #include "headers/DFAMinimizer.h"
 #include "headers/DFA.h"
 #include "headers/State.h"
-#include <map>
-#include <queue>
-#include <set>
-#include <vector>
 
 DFA DFAMinimizer::minimize(const DFA &dfa) {
   // Find reachable states
-  std::set<StateID> reachable;
-  std::queue<StateID> to_visit;
+  Set<StateID> reachable;
+  Queue<StateID> to_visit;
 
   StateID start = dfa.getStartStateID();
   reachable.insert(start);
@@ -32,7 +28,7 @@ DFA DFAMinimizer::minimize(const DFA &dfa) {
 
   // Create initial partitions (accepting vs non-accepting)
   // Only include reachable states
-  std::vector<Superstate> partitions;
+  Vector<Superstate> partitions;
   Superstate nonaccepting_partition;
   Superstate accepting_partition;
 
@@ -61,15 +57,15 @@ DFA DFAMinimizer::minimize(const DFA &dfa) {
   bool changed = true;
   while (changed) {
     changed = false;
-    std::vector<Superstate> new_partitions;
+    Vector<Superstate> new_partitions;
 
     for (const Superstate &partition : partitions) {
       // For each partition, try to split it
-      std::map<std::vector<int>, Superstate> signature_to_states;
+      Map<Vector<int>, Superstate> signature_to_states;
 
       for (StateID state_id : partition) {
         // Create signature: for each symbol, which partition does it go to?
-        std::vector<int> signature;
+        Vector<int> signature;
 
         for (Symbol symbol : alphabet) {
           StateID next_state = dfa.getNextState(state_id, symbol);
@@ -109,7 +105,7 @@ DFA DFAMinimizer::minimize(const DFA &dfa) {
 
   // Build the minimized DFA
   // Create mapping from old state ID to new partition ID
-  std::map<StateID, StateID> old_to_new_state;
+  Map<StateID, StateID> old_to_new_state;
   for (size_t i = 0; i < partitions.size(); i++) {
     for (StateID old_id : partitions[i]) {
       old_to_new_state[old_id] = static_cast<StateID>(i);

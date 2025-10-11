@@ -1,6 +1,5 @@
 #include "headers/RegexToNFA.h"
 #include "headers/RegexPreprocessor.h"
-#include <stack>
 
 NFA RegexToNFA::buildForSymbol(Symbol c) {
   const States states{State{0}, State{1}};
@@ -206,7 +205,7 @@ NFA RegexToNFA::kleeneStar(const NFA &nfa) {
 
 NFA RegexToNFA::convert(const String &regex) {
   String postfix = RegexPreprocessor::preprocess(regex);
-  std::stack<NFA> nfa_stack;
+  Stack<NFA> nfa_stack;
 
   for (char c : postfix) {
     if (c == '.') {

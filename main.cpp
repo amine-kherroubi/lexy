@@ -4,29 +4,29 @@
 #include "automata/headers/Visualizer.h"
 #include <iostream>
 
+using namespace std;
+
 int main() {
   String regex = "(a|b)*|c*|d";
-  std::cout << "Converting regex: " << regex << std::endl;
+  cout << "Converting regex: " << regex << endl;
 
   // Convert regex to NFA
   NFA nfa = RegexToNFA::convert(regex);
-  std::cout << "\nNFA created with " << nfa.getStates().size() << " states"
-            << std::endl;
+  cout << "\nNFA created with " << nfa.getStates().size() << " states" << endl;
   Visualizer::visualizeNFA(nfa, "nfa");
 
   // Convert NFA to DFA
   DFA dfa = NFADeterminizer::determinize(nfa);
-  std::cout << "\nDFA created with " << dfa.getStates().size() << " states"
-            << std::endl;
+  cout << "\nDFA created with " << dfa.getStates().size() << " states" << endl;
   Visualizer::visualizeDFA(dfa, "dfa");
 
   // Minimize DFA
   dfa = DFAMinimizer::minimize(dfa);
-  std::cout << "\nMinimized DFA created with " << dfa.getStates().size()
-            << " states" << std::endl;
+  cout << "\nMinimized DFA created with " << dfa.getStates().size() << " states"
+       << endl;
   Visualizer::visualizeDFA(dfa, "minimized_dfa");
 
-  std::cout << "\nAll visualizations generated successfully!" << std::endl;
+  cout << "\nAll visualizations generated successfully!" << endl;
 
   return 0;
 }
