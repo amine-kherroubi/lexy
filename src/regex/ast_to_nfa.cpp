@@ -39,7 +39,7 @@ NFA RegexASTToNFA::visit(const RegexASTNode *node) {
 }
 
 NFA RegexASTToNFA::visitChar(const CharNode *node) {
-  return ThompsonConstruction::buildForSymbol(node->value);
+  return ThompsonConstruction::buildForSymbol(node->value_);
 }
 
 NFA RegexASTToNFA::visitDot(const DotNode *node) {
@@ -55,12 +55,12 @@ NFA RegexASTToNFA::visitCharSet(const CharSetNode *node) {
   Set<char> matchingChars;
 
   // Add individual characters
-  for (char c : node->chars) {
+  for (char c : node->chars_) {
     matchingChars.insert(c);
   }
 
   // Add character ranges
-  for (const auto &range : node->ranges) {
+  for (const auto &range : node->ranges_) {
     for (char c = range.first; c <= range.second; c++) {
       matchingChars.insert(c);
     }
@@ -71,7 +71,7 @@ NFA RegexASTToNFA::visitCharSet(const CharSetNode *node) {
   }
 
   // If negated, we need all characters EXCEPT these
-  if (node->negated) {
+  if (node->negated_) {
     Set<char> negatedChars;
     // Consider printable ASCII range
     for (char c = 32; c <= 126; c++) {
@@ -86,36 +86,36 @@ NFA RegexASTToNFA::visitCharSet(const CharSetNode *node) {
 }
 
 NFA RegexASTToNFA::visitConcat(const ConcatNode *node) {
-  NFA left = visit(node->left.get());
-  NFA right = visit(node->right.get());
+  NFA left = visit(node->left_.get());
+  NFA right = visit(node->right_.get());
   return ThompsonConstruction::concatenate(left, right);
 }
 
 NFA RegexASTToNFA::visitAlt(const AltNode *node) {
-  NFA left = visit(node->left.get());
-  NFA right = visit(node->right.get());
+  NFA left = visit(node->left_.get());
+  NFA right = visit(node->right_.get());
   return ThompsonConstruction::alternate(left, right);
 }
 
 NFA RegexASTToNFA::visitStar(const StarNode *node) {
-  NFA child = visit(node->child.get());
+  NFA child = visit(node->child_.get());
   return ThompsonConstruction::kleeneStar(child, true); // Allow empty string
 }
 
 NFA RegexASTToNFA::visitPlus(const PlusNode *node) {
-  NFA child = visit(node->child.get());
+  NFA child = visit(node->child_.get());
   return ThompsonConstruction::oneOrMore(child);
 }
 
 NFA RegexASTToNFA::visitQuestion(const QuestionNode *node) {
-  NFA child = visit(node->child.get());
+  NFA child = visit(node->child_.get());
   return ThompsonConstruction::optional(child);
 }
 
 NFA RegexASTToNFA::visitRange(const RangeNode *node) {
-  NFA child = visit(node->child.get());
-  int min = node->min;
-  int max = node->max;
+  NFA child = visit(node->child_.get());
+  int min = node->min_;
+  int max = node->max_;
 
   // Handle special cases that can be converted to simpler operations
   if (min == 0 && max == 1) {

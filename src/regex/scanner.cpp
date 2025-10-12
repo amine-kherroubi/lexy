@@ -3,16 +3,16 @@
 char RegexScanner::advance() {
   if (isAtEnd())
     return '\0';
-  return regex[position++];
+  return regex_[position_++];
 }
 
 char RegexScanner::peek() const {
   if (isAtEnd())
     return '\0';
-  return regex[position];
+  return regex_[position_];
 }
 
-bool RegexScanner::isAtEnd() const { return position >= regex.size(); }
+bool RegexScanner::isAtEnd() const { return position_ >= regex_.size(); }
 
 RegexToken RegexScanner::getNextToken() {
   if (isAtEnd())

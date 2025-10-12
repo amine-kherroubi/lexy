@@ -37,8 +37,8 @@
  */
 class RegexParser {
 private:
-  RegexScanner &scanner;
-  RegexToken currentToken;
+  RegexScanner &scanner_;
+  RegexToken current_token_;
 
   void consume(RegexTokenType);
 
@@ -53,7 +53,7 @@ private:
 
 public:
   RegexParser(RegexScanner &scanner)
-      : scanner(scanner), currentToken(RegexTokenType::INVALID_TOKEN, "") {}
+      : scanner_(scanner), current_token_(RegexTokenType::INVALID_TOKEN, "") {}
 
   Pointer<RegexASTNode> parse();
 };

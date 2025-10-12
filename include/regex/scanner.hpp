@@ -5,15 +5,15 @@
 
 class RegexScanner {
 private:
-  String regex;
-  Index position = 0;
+  String regex_;
+  Index position_ = 0;
 
   char advance();
   char peek() const;
   bool isAtEnd() const;
 
 public:
-  RegexScanner(const String &regex) : regex(regex) {}
+  RegexScanner(const String &regex) : regex_(regex) {}
 
   RegexToken getNextToken();
 };

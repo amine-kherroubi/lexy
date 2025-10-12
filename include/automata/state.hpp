@@ -4,11 +4,11 @@ using StateID = int;
 
 class State {
 private:
-  StateID id;
+  StateID id_;
 
 public:
-  State(StateID id) : id(id) {}
+  State(StateID id) : id_(id) {}
 
-  StateID getID() const { return id; }
-  void setID(StateID id) { this->id = id; }
+  StateID getID() const { return id_; }
+  void setID(StateID id) { this->id_ = id; }
 };

@@ -5,14 +5,14 @@
 
 class NFA : public FA {
 private:
-  Vector<UnorderedMap<Symbol, StateIDs>> transitions;
-  Vector<StateIDs> epsilon_transitions;
+  Vector<UnorderedMap<Symbol, StateIDs>> transitions_;
+  Vector<StateIDs> epsilon_transitions_;
 
 public:
   NFA(const Alphabet &alphabet, const States &states,
       const StateIDs &accepting_state_ids, StateID start_state_id)
       : FA(alphabet, states, accepting_state_ids, start_state_id),
-        transitions(states.size()), epsilon_transitions(states.size()) {}
+        transitions_(states.size()), epsilon_transitions_(states.size()) {}
 
   void addTransition(StateID, Symbol, StateID);
   void addEpsilonTransition(StateID, StateID);

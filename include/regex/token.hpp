@@ -26,12 +26,13 @@ enum class RegexTokenType {
 
 class RegexToken {
 private:
-  RegexTokenType type;
-  Lexeme lexeme;
+  RegexTokenType type_;
+  Lexeme lexeme_;
 
 public:
-  RegexToken(RegexTokenType type, Lexeme lexeme) : type(type), lexeme(lexeme) {}
+  RegexToken(RegexTokenType type, Lexeme lexeme)
+      : type_(type), lexeme_(lexeme) {}
 
-  RegexTokenType getType() const { return type; }
-  Lexeme getLexeme() const { return lexeme; }
+  RegexTokenType getType() const { return type_; }
+  Lexeme getLexeme() const { return lexeme_; }
 };

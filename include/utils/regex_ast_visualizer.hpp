@@ -9,7 +9,7 @@ public:
                            const String &);
 
 private:
-  static int nodeCounter;
+  static int node_counter_;
 
   static String escapeLabel(const String &);
   static void generateDotFile(const String &, const String &);
