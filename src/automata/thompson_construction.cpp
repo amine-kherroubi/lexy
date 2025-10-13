@@ -16,7 +16,6 @@ NFA ThompsonConstruction::buildForCharSet(const Set<char> &chars) {
   }
 
   // Instead of alternating N NFAs, create one NFA with N parallel transitions
-
   const States states{State{0}, State{1}};
   const StateIDs accepting_state_ids{1};
 
@@ -156,7 +155,6 @@ NFA ThompsonConstruction::kleeneStar(const NFA &nfa, bool allow_empty) {
   }
 
   // Add epsilon transitions from all accepting states back to start
-  // (except from start to itself to avoid redundant loop)
   for (StateID accepting_id : accepting_ids) {
     if (accepting_id != start_state_id) {
       result.addEpsilonTransition(accepting_id, start_state_id);
