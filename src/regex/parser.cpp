@@ -13,9 +13,6 @@ void RegexParser::consume(RegexTokenType expected) {
 }
 
 Pointer<RegexASTNode> RegexParser::parse() {
-  // Initialize by reading the first token
-  current_token_ = scanner_.getNextToken();
-
   Pointer<RegexASTNode> result = parseAlternation();
 
   if (current_token_.getType() != RegexTokenType::END_OF_INPUT) {

@@ -9,14 +9,15 @@
 #include <unordered_map>
 #include <vector>
 
-template <typename Tp> using Vector = std::vector<Tp>;
-template <typename Tp> using Set = std::set<Tp>;
-template <typename Tp> using Queue = std::queue<Tp>;
-template <typename Tp> using Stack = std::stack<Tp>;
+template <typename T> using Vector = std::vector<T>;
+template <typename T> using Set = std::set<T>;
+template <typename T> using Queue = std::queue<T>;
+template <typename T> using Stack = std::stack<T>;
 template <typename Key, typename Value> using Map = std::map<Key, Value>;
 template <typename Key, typename Value>
 using UnorderedMap = std::unordered_map<Key, Value>;
-template <typename Tp> using Pointer = std::unique_ptr<Tp>;
+template <typename T> using Pointer = std::unique_ptr<T>;
+template <typename T1, typename T2> using Pair = std::pair<T1, T2>;
 
 using String = std::string;
 

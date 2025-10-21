@@ -37,7 +37,7 @@ private:
 
 public:
   RegexParser(RegexScanner &scanner)
-      : scanner_(scanner), current_token_(RegexTokenType::INVALID_TOKEN, "") {}
+      : scanner_(scanner), current_token_(scanner.getNextToken()) {}
 
   Pointer<RegexASTNode> parse();
 };
