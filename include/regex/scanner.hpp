@@ -3,6 +3,27 @@
 #include "../core/types.hpp"
 #include "token.hpp"
 
+/**
+ * Lexical Grammar:
+ * ALTERNATION ::= \|
+ * DOT ::= \.
+ * STAR ::= \*
+ * PLUS ::= \+
+ * QUESTION ::= \?
+ * LEFT_PAREN ::= \(
+ * RIGHT_PAREN ::= \)
+ * LEFT_BRACKET ::= \[
+ * RIGHT_BRACKET ::= \]
+ * LEFT_BRACE ::= \{
+ * RIGHT_BRACE ::= \}
+ * CARET ::= \^
+ * BACKSLASH ::= \\
+ * HYPHEN ::= \-
+ * COMMA ::= \,
+ * CHARACTER ::= .
+ * ESCAPED_CHAR ::= BACKSLASH CHARACTER
+ * END_OF_INPUT ::= "\0"
+ */
 class RegexScanner {
 private:
   String regex_;

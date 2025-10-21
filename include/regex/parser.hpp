@@ -1,39 +1,23 @@
 #pragma once
+
 #include "../core/types.hpp"
 #include "ast.hpp"
 #include "scanner.hpp"
 #include "token.hpp"
 
 /**
- * @file RegexParser.h
- * @brief Parser for regular expressions, builds an AST from tokenized input.
- *
- * Grammar:
- * @code
- * regex ::= alternation
- *
+ * Syntax Grammar:
+ * regex ::= alternation END_OF_INPUT
  * alternation ::= concatenation (ALTERNATION concatenation)*
- *
  * concatenation ::= repetition+
- *
  * repetition ::= atom quantifier?
- *
  * quantifier ::= STAR | PLUS | QUESTION | range_quantifier
- *
  * range_quantifier ::= LEFT_BRACE number (COMMA number?)? RIGHT_BRACE
- *
- * number ::= CHARACTER+  // where CHARACTER is a digit
- *
+ * number ::= CHARACTER+ // where CHARACTER is a digit
  * atom ::= CHARACTER | ESCAPED_CHAR | DOT | set | group
- *
  * set ::= LEFT_BRACKET CARET? set_item+ RIGHT_BRACKET
- *
  * set_item ::= CHARACTER | ESCAPED_CHAR | CHARACTER HYPHEN CHARACTER
- *
  * group ::= LEFT_PAREN regex RIGHT_BAREN
- * @endcode
- *
- * @note The parser assumes a RegexScanner providing tokenized input.
  */
 class RegexParser {
 private:
