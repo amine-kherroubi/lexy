@@ -21,5 +21,5 @@ public:
   UserSpecParser(UserSpecScanner &scanner)
       : scanner_(scanner), current_token_(scanner.getNextToken()) {}
 
-  Map<String, String> parse();
+  UnorderedMap<String, String> parse();
 };

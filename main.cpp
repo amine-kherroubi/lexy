@@ -34,9 +34,9 @@ int main() {
 
   UserSpecScanner user_spec_scanner(specifications);
   UserSpecParser user_spec_parser(user_spec_scanner);
-  Map<String, String> user_token_types = user_spec_parser.parse();
+  UnorderedMap<String, String> user_token_types = user_spec_parser.parse();
 
-  Map<String, NFA> nfas = {};
+  UnorderedMap<String, NFA> nfas = {};
   for (auto &[token_type, regex] : user_token_types) {
     RegexScanner regex_scanner(regex);
     RegexParser regex_parser(regex_scanner);

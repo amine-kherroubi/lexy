@@ -10,8 +10,9 @@ private:
 
 public:
   NFA(const Alphabet &alphabet, const States &states,
-      const StateIDs &accepting_state_ids, StateID start_state_id)
-      : FA(alphabet, states, accepting_state_ids, start_state_id),
+      const UnorderedMap<StateID, String> &accepting_states,
+      StateID start_state_id)
+      : FA(alphabet, states, accepting_states, start_state_id),
         transitions_(states.size()), epsilon_transitions_(states.size()) {}
 
   void addTransition(StateID, Symbol, StateID);
