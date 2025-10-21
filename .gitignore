@@ -40,6 +40,9 @@
 # debug information files
 *.dwo
 
+# Executable
+scanner_generator.exe
+
 # Output folders
 graphviz/
 images/

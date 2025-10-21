@@ -22,7 +22,7 @@ BUILD_DIR = build
 OBJS = $(SRCS:%.cpp=$(BUILD_DIR)/%.o)
 
 # Target executable
-TARGET = regex_converter
+TARGET = scanner_generator.exe
 
 # Default target
 all: $(TARGET)
