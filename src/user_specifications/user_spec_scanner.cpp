@@ -1,4 +1,6 @@
 #include "../../include/user_specifications/user_spec_scanner.hpp"
+#include <cctype>
+#include <stdexcept>
 
 char UserSpecScanner::advance() {
   if (isAtEnd())
@@ -16,6 +18,52 @@ bool UserSpecScanner::isAtEnd() const {
   return position_ >= specifications_.size();
 };
 
+UserSpecToken UserSpecScanner::scanUserTokenType() {
+  String token_type;
+  token_type.push_back(specifications_[position_ - 1]);
+
+  while (!isAtEnd()) {
+    char next = peek();
+    if (std::isupper(static_cast<unsigned char>(next)) || next == '_') {
+      token_type.push_back(advance());
+    } else {
+      break;
+    }
+  }
+
+  return {UserSpecTokenType::TOKEN_TYPE, token_type};
+}
+
+UserSpecToken UserSpecScanner::scanDefinitionSymbol() {
+  if (!isAtEnd() && peek() == ':') {
+    advance();
+    if (!isAtEnd() && peek() == '=') {
+      advance();
+      return {UserSpecTokenType::DEFINITION_SYMBOL, "::="};
+    }
+  }
+  throw std::runtime_error("Invalid character sequence starting with ':'");
+}
+
+UserSpecToken UserSpecScanner::scanUserRegex() {
+  String regex;
+  while (!isAtEnd()) {
+    char next = advance();
+    if (next == '\\') {
+      if (isAtEnd())
+        throw std::runtime_error("Unterminated regex: escape at end of input");
+      char escaped = advance();
+      regex.push_back('\\');
+      regex.push_back(escaped);
+    } else if (next == '"') {
+      return {UserSpecTokenType::REGEX, regex};
+    } else {
+      regex.push_back(next);
+    }
+  }
+  throw std::runtime_error("Unterminated regex: missing closing quote");
+}
+
 UserSpecToken UserSpecScanner::getNextToken() {
   char current = advance();
   while (!isAtEnd() && (current == ' ' || current == '\t' || current == '\r' ||
@@ -29,16 +77,14 @@ UserSpecToken UserSpecScanner::getNextToken() {
   if (current == '\n')
     return {UserSpecTokenType::NEWLINE, "\n"};
 
-  String char_sequence;
-  char_sequence.push_back(current);
+  if (current == '"')
+    return scanUserRegex();
 
-  while (!isAtEnd()) {
-    char next = peek();
-    if (next == ' ' || next == '\t' || next == '\r' || next == '\f' ||
-        next == '\v' || next == '\n')
-      break;
-    char_sequence.push_back(advance());
-  }
+  if (std::isupper(static_cast<unsigned char>(current)) || current == '_')
+    return scanUserTokenType();
 
-  return {UserSpecTokenType::CHAR_SEQUENCE, char_sequence};
+  if (current == ':')
+    return scanDefinitionSymbol();
+
+  throw std::runtime_error(String("Unexpected character: '") + current + "'");
 }

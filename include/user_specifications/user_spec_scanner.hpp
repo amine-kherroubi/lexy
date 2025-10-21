@@ -5,7 +5,9 @@
 
 /**
  * Lexical Grammar:
- * CHAR_SEQUENCE ::= [^\t\r\n\f\v]+
+ * TOKEN_TYPE ::= [A-Z_]+
+ * DEFINITION_SYMBOL ::= ::=
+ * REGEX ::= "([^"\\]|\\.)*"
  * NEWLINE ::= \\n
  * END-OF-INPUT ::= \\0
  */
@@ -17,6 +19,9 @@ private:
   char advance();
   char peek() const;
   bool isAtEnd() const;
+  UserSpecToken scanUserTokenType();
+  UserSpecToken scanDefinitionSymbol();
+  UserSpecToken scanUserRegex();
 
 public:
   UserSpecScanner(const String &specification)

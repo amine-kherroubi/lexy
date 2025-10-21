@@ -12,8 +12,10 @@ SRCS = main.cpp \
        src/regex/parser.cpp \
        src/regex/preprocessor.cpp \
        src/regex/ast_to_nfa.cpp \
-       src/utils/automata_visualizer.cpp \
-       src/utils/regex_ast_visualizer.cpp
+       src/visualization/automata_visualizer.cpp \
+       src/visualization/regex_ast_visualizer.cpp \
+	   src/user_specifications/user_spec_scanner.cpp \
+	   src/user_specifications/user_spec_parser.cpp \
 
 # Object files (in build directory)
 BUILD_DIR = build

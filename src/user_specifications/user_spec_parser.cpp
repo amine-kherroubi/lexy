@@ -1,5 +1,4 @@
 #include "../../include/user_specifications/user_spec_parser.hpp"
-#include <cctype>
 #include <stdexcept>
 
 void UserSpecParser::consume(UserSpecTokenType expected) {
@@ -27,21 +26,10 @@ Map<String, String> UserSpecParser::parse() {
 
 Pair<String, String> UserSpecParser::parse_specification() {
   String user_token_type = current_token_.getLexeme();
-  for (char c : user_token_type) {
-    if (!(std::isupper(static_cast<unsigned char>(c)) || c == '_'))
-      throw std::runtime_error(
-          "Token type can't contain character '" + String(1, c) +
-          "', only uppercase English letters and underscores are allowed");
-  }
-  consume(UserSpecTokenType::CHAR_SEQUENCE);
-
-  if (current_token_.getLexeme() != "::=")
-    throw std::runtime_error("Expected definition symbol '::=', got '" +
-                             current_token_.getLexeme() + "'");
-  consume(UserSpecTokenType::CHAR_SEQUENCE);
-
+  consume(UserSpecTokenType::TOKEN_TYPE);
+  consume(UserSpecTokenType::DEFINITION_SYMBOL);
   String regex = current_token_.getLexeme();
-  consume(UserSpecTokenType::CHAR_SEQUENCE);
+  consume(UserSpecTokenType::REGEX);
 
   return {user_token_type, regex};
 }

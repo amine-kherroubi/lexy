@@ -2,7 +2,13 @@
 
 #include "../core/types.hpp"
 
-enum class UserSpecTokenType { CHAR_SEQUENCE, NEWLINE, END_OF_INPUT };
+enum class UserSpecTokenType {
+  TOKEN_TYPE,
+  DEFINITION_SYMBOL,
+  REGEX,
+  NEWLINE,
+  END_OF_INPUT
+};
 
 class UserSpecToken {
 private:
