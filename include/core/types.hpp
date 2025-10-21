@@ -1,5 +1,6 @@
 #include "../automata/state.hpp"
 #include <cstddef>
+#include <fstream>
 #include <map>
 #include <memory>
 #include <queue>
@@ -18,6 +19,7 @@ template <typename Key, typename Value>
 using UnorderedMap = std::unordered_map<Key, Value>;
 template <typename T> using Pointer = std::unique_ptr<T>;
 template <typename T1, typename T2> using Pair = std::pair<T1, T2>;
+using File = std::basic_ifstream<char>;
 
 using String = std::string;
 

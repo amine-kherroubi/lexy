@@ -3,14 +3,10 @@
 #include "include/regex/ast_to_nfa.hpp"
 #include "include/regex/parser.hpp"
 #include "include/regex/scanner.hpp"
-#include "include/utils/automata_visualizer.hpp"
-#include "include/utils/regex_ast_visualizer.hpp"
-#include <fstream>
 #include <iostream>
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <vector>
 
 using namespace std;
 
@@ -24,16 +20,15 @@ void createDirectory(const String &path) {
 }
 
 int main(int argc, char *argv[]) {
-  std::ifstream spec_file("tokens.spec");
+  File spec_file("tokens.spec");
   if (!spec_file.is_open()) {
-    std::cerr << "Can't open specification file";
+    cerr << "Can't open specification file";
     return -1;
   }
 
-  std::vector<std::string> token_specs = {};
-  std::string line;
+  Vector<String> token_specs = {};
+  String line;
   while (std::getline(spec_file, line)) {
-    
   }
   return 0;
 }

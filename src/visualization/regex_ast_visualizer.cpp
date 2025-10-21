@@ -1,4 +1,4 @@
-#include "../../include/utils/regex_ast_visualizer.hpp"
+#include "../../include/visualization/regex_ast_visualizer.hpp"
 #include <fstream>
 #include <iostream>
 #include <sstream>
