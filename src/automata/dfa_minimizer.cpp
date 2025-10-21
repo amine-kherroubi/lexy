@@ -118,27 +118,24 @@ DFA DFAMinimizer::minimize(const DFA &dfa) {
 
   // Build new states and accepting states
   States minimized_states;
-  StateIDs minimized_accepting_ids;
+  UnorderedMap<StateID, String> minimized_accepting_map;
 
   for (Index i = 0; i < partitions.size(); i++) {
     minimized_states.push_back(State{static_cast<int>(i)});
 
     // Check if this partition contains an accepting state
-    bool is_accepting = false;
+    // If so, use the token type from that accepting state
     for (StateID old_id : partitions[i]) {
       if (dfa.isAccepting(old_id)) {
-        is_accepting = true;
+        String token_type = dfa.getTokenType(old_id);
+        minimized_accepting_map[static_cast<StateID>(i)] = token_type;
         break;
       }
-    }
-
-    if (is_accepting) {
-      minimized_accepting_ids.push_back(static_cast<StateID>(i));
     }
   }
 
   // Build minimized DFA
-  DFA minimized_dfa{alphabet, minimized_states, minimized_accepting_ids,
+  DFA minimized_dfa{alphabet, minimized_states, minimized_accepting_map,
                     new_initial};
   minimized_dfa.resizeTransitions(partitions.size());
 

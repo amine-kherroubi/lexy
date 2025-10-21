@@ -44,4 +44,6 @@ int main() {
     NFA nfa = RegexASTToNFA::convert(regex_ast);
     nfas.insert({token_type, nfa});
   }
+
+  NFA merged_nfa = ThompsonConstruction::mergeAll(const Vector<NFA> &)
 }

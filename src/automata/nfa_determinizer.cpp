@@ -70,7 +70,7 @@ DFA NFADeterminizer::determinize(const NFA &nfa) {
   Queue<Superstate> superstates_to_process;
 
   States dfa_states;
-  StateIDs dfa_accepting_state_ids;
+  UnorderedMap<StateID, String> dfa_accepting_map;
 
   // Add initial state
   superstate_to_state_id_map[start_superstate] = 0;
@@ -78,12 +78,18 @@ DFA NFADeterminizer::determinize(const NFA &nfa) {
   superstates_to_process.push(start_superstate);
 
   if (containsAcceptingState(nfa, start_superstate)) {
-    dfa_accepting_state_ids.push_back(0);
+    // Find first accepting state in superstate to get token type
+    for (StateID id : start_superstate) {
+      if (nfa.isAccepting(id)) {
+        dfa_accepting_map[0] = nfa.getTokenType(id);
+        break;
+      }
+    }
   }
 
-  Alphabet alphabet = nfa.getAlphabet();
+  const Alphabet alphabet = nfa.getAlphabet();
 
-  DFA dfa(alphabet, dfa_states, dfa_accepting_state_ids, 0);
+  DFA dfa(alphabet, dfa_states, dfa_accepting_map, 0);
   dfa.resizeTransitions(1);
 
   while (!superstates_to_process.empty()) {
@@ -108,7 +114,13 @@ DFA NFADeterminizer::determinize(const NFA &nfa) {
         superstates_to_process.push(next_superstate);
 
         if (containsAcceptingState(nfa, next_superstate)) {
-          dfa_accepting_state_ids.push_back(new_id);
+          // Find first accepting state to get token type
+          for (StateID id : next_superstate) {
+            if (nfa.isAccepting(id)) {
+              dfa_accepting_map[new_id] = nfa.getTokenType(id);
+              break;
+            }
+          }
         }
 
         dfa.resizeTransitions(dfa_states.size());
@@ -121,7 +133,7 @@ DFA NFADeterminizer::determinize(const NFA &nfa) {
 
   // Update the DFA with the final states and accepting states
   dfa.getStates() = dfa_states;
-  dfa.getAcceptingStateIDs() = dfa_accepting_state_ids;
+  dfa.getAcceptingStateIDsToTokenTypes() = dfa_accepting_map;
 
   return dfa;
 }
