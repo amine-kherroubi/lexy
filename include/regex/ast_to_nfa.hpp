@@ -6,7 +6,7 @@
 
 class RegexASTToNFA {
 public:
-  static NFA convert(const Pointer<RegexASTNode> &);
+  static NFA convert(const Pointer<RegexASTNode> &, const String &token_type);
 
 private:
   static NFA visitChar(const CharNode *);
@@ -19,4 +19,5 @@ private:
   static NFA visitQuestion(const QuestionNode *);
   static NFA visitRange(const RangeNode *);
   static NFA visit(const RegexASTNode *);
+  static void setTokenType(NFA &, const String &token_type);
 };

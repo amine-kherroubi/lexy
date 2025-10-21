@@ -2,11 +2,24 @@
 #include "../../include/automata/thompson_construction.hpp"
 #include <stdexcept>
 
-NFA RegexASTToNFA::convert(const Pointer<RegexASTNode> &root) {
+NFA RegexASTToNFA::convert(const Pointer<RegexASTNode> &root,
+                           const String &token_type) {
   if (!root) {
     throw std::runtime_error("Cannot convert null AST to NFA");
   }
-  return visit(root.get());
+  NFA nfa = visit(root.get());
+  setTokenType(nfa, token_type);
+  return nfa;
+}
+
+void RegexASTToNFA::setTokenType(NFA &nfa, const String &token_type) {
+  UnorderedMap<StateID, String> &accepting_map =
+      nfa.getAcceptingStateIDsToTokenTypes();
+
+  // Update all accepting states to have the correct token type
+  for (auto &[state_id, current_token] : accepting_map) {
+    accepting_map[state_id] = token_type;
+  }
 }
 
 NFA RegexASTToNFA::visit(const RegexASTNode *node) {

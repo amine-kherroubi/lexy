@@ -36,14 +36,27 @@ int main() {
   UserSpecParser user_spec_parser(user_spec_scanner);
   UnorderedMap<String, String> user_token_types = user_spec_parser.parse();
 
-  UnorderedMap<String, NFA> nfas = {};
-  for (auto &[token_type, regex] : user_token_types) {
+  Vector<NFA> nfas;
+  for (const auto &[token_type, regex] : user_token_types) {
+    cout << "Processing token type: " << token_type << " with regex: " << regex
+         << endl;
     RegexScanner regex_scanner(regex);
     RegexParser regex_parser(regex_scanner);
     Pointer<RegexASTNode> regex_ast = regex_parser.parse();
-    NFA nfa = RegexASTToNFA::convert(regex_ast);
-    nfas.insert({token_type, nfa});
+    NFA nfa = RegexASTToNFA::convert(regex_ast, token_type);
+    nfas.push_back(nfa);
   }
 
-  NFA merged_nfa = ThompsonConstruction::mergeAll(const Vector<NFA> &)
+  NFA merged_nfa = ThompsonConstruction::mergeAll(nfas);
+
+  cout << "Successfully created merged NFA with "
+       << merged_nfa.getStates().size() << " states" << endl;
+
+  // Print accepting states and their token types
+  cout << "Accepting states:" << endl;
+  for (StateID id : merged_nfa.getAcceptingStateIDs()) {
+    cout << "  State " << id << " -> " << merged_nfa.getTokenType(id) << endl;
+  }
+
+  return 0;
 }
