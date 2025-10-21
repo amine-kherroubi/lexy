@@ -1,6 +1,8 @@
 #include "include/automata/dfa.hpp"
 #include "include/automata/dfa_minimizer.hpp"
 #include "include/automata/nfa_determinizer.hpp"
+#include "include/automata/thompson_construction.hpp"
+#include "include/regex/ast.hpp"
 #include "include/regex/ast_to_nfa.hpp"
 #include "include/regex/parser.hpp"
 #include "include/regex/scanner.hpp"
@@ -23,7 +25,7 @@ void createDirectory(const String &path) {
 int main() {
   File spec_file("tokens.spec");
   if (!spec_file.is_open()) {
-    cerr << "Can't open specification file";
+    cerr << "Failed to open 'tokens.spec' for reading" << endl;
     return -1;
   }
 
@@ -34,11 +36,12 @@ int main() {
   UserSpecParser user_spec_parser(user_spec_scanner);
   Map<String, String> user_token_types = user_spec_parser.parse();
 
-  // Print results
-  cout << "Parsed Token Types:\n";
-  cout << "-------------------\n";
-  for (const auto &[token_name, regex_pattern] : user_token_types) {
-    cout << token_name << " : " << regex_pattern << "\n";
+  Map<String, NFA> nfas = {};
+  for (auto &[token_type, regex] : user_token_types) {
+    RegexScanner regex_scanner(regex);
+    RegexParser regex_parser(regex_scanner);
+    Pointer<RegexASTNode> regex_ast = regex_parser.parse();
+    NFA nfa = RegexASTToNFA::convert(regex_ast);
+    nfas.insert({token_type, nfa});
   }
-  cout << "\nTotal tokens: " << user_token_types.size() << "\n";
 }

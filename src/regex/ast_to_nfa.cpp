@@ -2,38 +2,35 @@
 #include "../../include/automata/thompson_construction.hpp"
 #include <stdexcept>
 
-NFA RegexASTToNFA::convert(const RegexASTNode *root) {
+NFA RegexASTToNFA::convert(const Pointer<RegexASTNode> &root) {
   if (!root) {
     throw std::runtime_error("Cannot convert null AST to NFA");
   }
-  return visit(root);
+  return visit(root.get());
 }
 
 NFA RegexASTToNFA::visit(const RegexASTNode *node) {
-  if (!node) {
+  if (!node)
     throw std::runtime_error("Null node encountered during AST traversal");
-  }
 
-  // Try each node type using dynamic_cast
-  if (auto charNode = dynamic_cast<const CharNode *>(node)) {
+  if (auto *charNode = dynamic_cast<const CharNode *>(node))
     return visitChar(charNode);
-  } else if (auto dotNode = dynamic_cast<const DotNode *>(node)) {
+  if (auto *dotNode = dynamic_cast<const DotNode *>(node))
     return visitDot(dotNode);
-  } else if (auto charSetNode = dynamic_cast<const CharSetNode *>(node)) {
+  if (auto *charSetNode = dynamic_cast<const CharSetNode *>(node))
     return visitCharSet(charSetNode);
-  } else if (auto concatNode = dynamic_cast<const ConcatNode *>(node)) {
+  if (auto *concatNode = dynamic_cast<const ConcatNode *>(node))
     return visitConcat(concatNode);
-  } else if (auto altNode = dynamic_cast<const AltNode *>(node)) {
+  if (auto *altNode = dynamic_cast<const AltNode *>(node))
     return visitAlt(altNode);
-  } else if (auto starNode = dynamic_cast<const StarNode *>(node)) {
+  if (auto *starNode = dynamic_cast<const StarNode *>(node))
     return visitStar(starNode);
-  } else if (auto plusNode = dynamic_cast<const PlusNode *>(node)) {
+  if (auto *plusNode = dynamic_cast<const PlusNode *>(node))
     return visitPlus(plusNode);
-  } else if (auto questionNode = dynamic_cast<const QuestionNode *>(node)) {
+  if (auto *questionNode = dynamic_cast<const QuestionNode *>(node))
     return visitQuestion(questionNode);
-  } else if (auto rangeNode = dynamic_cast<const RangeNode *>(node)) {
+  if (auto *rangeNode = dynamic_cast<const RangeNode *>(node))
     return visitRange(rangeNode);
-  }
 
   throw std::runtime_error("Unknown AST node type encountered");
 }

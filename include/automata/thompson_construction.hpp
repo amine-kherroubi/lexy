@@ -13,6 +13,7 @@ public:
   static NFA optional(const NFA &);
   static NFA oneOrMore(const NFA &);
   static NFA repeat(const NFA &, int, int);
+  static NFA mergeAll(const Vector<NFA> &);
 
 private:
   static Alphabet mergeAlphabets(const Alphabet &, const Alphabet &);

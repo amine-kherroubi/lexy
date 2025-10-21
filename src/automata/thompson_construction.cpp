@@ -232,6 +232,49 @@ NFA ThompsonConstruction::repeat(const NFA &nfa, int min, int max) {
   return result;
 }
 
+NFA ThompsonConstruction::mergeAll(const Vector<NFA> &nfas) {
+  if (nfas.empty())
+    throw std::runtime_error("mergeAll called with empty vector");
+  if (nfas.size() == 1)
+    return nfas.front();
+
+  // Merge all alphabets
+  Alphabet merged_alphabet;
+  size_t total_states = 1; // new global start state (ID 0)
+  for (const auto &nfa : nfas) {
+    merged_alphabet.insert(nfa.getAlphabet().begin(), nfa.getAlphabet().end());
+    total_states += nfa.getStates().size();
+  }
+
+  // Create new state list
+  States new_states;
+  for (size_t i = 0; i < total_states; ++i)
+    new_states.push_back(State{static_cast<int>(i)});
+
+  // Collect accepting states
+  StateIDs new_accepting_ids;
+  NFA merged(merged_alphabet, new_states, new_accepting_ids, 0);
+  merged.resizeTransitions(total_states);
+
+  // Copy NFAs and connect with epsilon transitions from global start
+  int offset = 1;
+  for (const auto &nfa : nfas) {
+    ThompsonConstruction::copyNFAStructure(nfa, merged, offset);
+
+    // Add epsilon from global start to each NFA's start
+    merged.addEpsilonTransition(0, offset + nfa.getStartStateID());
+
+    // Copy accepting states
+    const auto &accepting = nfa.getAcceptingStateIDs();
+    for (auto id : accepting)
+      merged.getAcceptingStateIDs().push_back(offset + id);
+
+    offset += nfa.getStates().size();
+  }
+
+  return merged;
+}
+
 // Private helper methods
 
 Alphabet ThompsonConstruction::mergeAlphabets(const Alphabet &first,
