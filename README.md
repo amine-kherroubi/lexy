@@ -29,7 +29,7 @@ The generated scanners use a 2D array `TRANSITION_TABLE[state][char] -> next_sta
 ## Build & Run
 
 ```bash
-make                                    # Build generator
+make                                   # Build generator
 ./scanner_generator.exe input.lexy     # Generate scanner
 ```
 
