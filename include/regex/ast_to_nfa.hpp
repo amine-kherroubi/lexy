@@ -10,7 +10,7 @@ public:
 
 private:
   static NFA visitChar(const CharNode *);
-  static NFA visitDot(const DotNode *);
+  static NFA visitDot([[maybe_unused]] const DotNode *);
   static NFA visitCharSet(const CharSetNode *);
   static NFA visitConcat(const ConcatNode *);
   static NFA visitAlt(const AltNode *);

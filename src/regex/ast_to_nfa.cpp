@@ -52,7 +52,7 @@ NFA RegexASTToNFA::visitChar(const CharNode *node) {
   return ThompsonConstruction::buildForSymbol(node->value_);
 }
 
-NFA RegexASTToNFA::visitDot(const DotNode *node) {
+NFA RegexASTToNFA::visitDot([[maybe_unused]] const DotNode *node) {
   // The dot matches any printable ASCII character (32-126)
   Set<char> allPrintable;
   for (char c = 32; c <= 126; c++) {

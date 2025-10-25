@@ -42,9 +42,6 @@ String CodeGenerator::generateTransitionTable(const DFA &dfa) {
   StringStream string_stream;
   Size num_states = dfa.getStates().size();
 
-  string_stream
-      << "// Transition table: [state][symbol] -> next_state (-1 means no "
-         "transition)\n";
   string_stream << "static const int TRANSITION_TABLE[" << num_states
                 << "][128] = {\n";
 
@@ -75,9 +72,6 @@ String CodeGenerator::generateAcceptingStates(
   StringStream string_stream;
   Size num_states = dfa.getStates().size();
 
-  string_stream
-      << "// Accepting states: -1 means non-accepting, otherwise token type "
-         "index\n";
   string_stream << "static const int ACCEPTING_STATES[" << num_states
                 << "] = {\n";
 
@@ -105,7 +99,6 @@ String CodeGenerator::generateAcceptingStates(
 String CodeGenerator::generateTokenNames(const Vector<String> &token_types) {
   StringStream string_stream;
 
-  string_stream << "// Token type names\n";
   string_stream << "static const char* TOKEN_NAMES[] = {\n";
 
   for (Index i = 0; i < token_types.size(); i++) {
@@ -123,10 +116,8 @@ String CodeGenerator::generateScannerClass(const DFA &dfa) {
   StringStream string_stream;
   StateID start_state = dfa.getStartStateID();
 
-  string_stream << "// Token structure\n";
   string_stream << "struct Token {\n";
-  string_stream
-      << "    int type;  // -1 for EOF, -2 for ERROR, >= 0 for token types\n";
+  string_stream << "    int type;\n";
   string_stream << "    std::string lexeme;\n";
   string_stream << "};\n\n";
 
@@ -144,7 +135,7 @@ String CodeGenerator::generateScannerClass(const DFA &dfa) {
 
   string_stream << "    Token getNextToken() {\n";
   string_stream << "        if (position >= length) {\n";
-  string_stream << "            return {-1, \"\"}; // EOF\n";
+  string_stream << "            return {-1, \"\"};\n";
   string_stream << "        }\n\n";
 
   string_stream << "        int current_state = " << start_state << ";\n";
@@ -152,14 +143,12 @@ String CodeGenerator::generateScannerClass(const DFA &dfa) {
   string_stream << "        int last_accepting_state = -1;\n";
   string_stream << "        size_t last_accepting_pos = position;\n\n";
 
-  string_stream << "        // Maximal munch: scan as far as possible\n";
   string_stream << "        while (position < length) {\n";
   string_stream << "            char c = input[position];\n";
   string_stream << "            int next_state = "
                    "TRANSITION_TABLE[current_state][(int)c];\n\n";
 
-  string_stream
-      << "            if (next_state == -1) break; // No valid transition\n\n";
+  string_stream << "            if (next_state == -1) break;\n\n";
 
   string_stream << "            current_state = next_state;\n";
   string_stream << "            position++;\n\n";
@@ -180,11 +169,8 @@ String CodeGenerator::generateScannerClass(const DFA &dfa) {
   string_stream << "            return {token_type, lexeme};\n";
   string_stream << "        }\n\n";
 
-  string_stream << "        // Error: no match found\n";
-  string_stream << "        position = start_pos + 1; // Skip one character\n";
-  string_stream
-      << "        return {-2, std::string(1, input[start_pos])}; // ERROR "
-         "token\n";
+  string_stream << "        position = start_pos + 1;\n";
+  string_stream << "        return {-2, std::string(1, input[start_pos])};\n";
   string_stream << "    }\n";
   string_stream << "};\n\n";
 

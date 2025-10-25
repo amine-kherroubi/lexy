@@ -116,7 +116,8 @@ int RegexASTVisualizer::visitChar(const CharNode *node, StringStream &dot) {
   return id;
 }
 
-int RegexASTVisualizer::visitDot(const DotNode *node, StringStream &dot) {
+int RegexASTVisualizer::visitDot([[maybe_unused]] const DotNode *node,
+                                 StringStream &dot) {
   int id = node_counter_++;
   dot << "  node" << id << " [label=\"Dot\\n(.)\"];\n";
   return id;

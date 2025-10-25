@@ -18,7 +18,7 @@ private:
 
   static int visitNode(const RegexASTNode *, StringStream &);
   static int visitChar(const CharNode *, StringStream &);
-  static int visitDot(const DotNode *, StringStream &);
+  static int visitDot([[maybe_unused]] const DotNode *, StringStream &);
   static int visitCharSet(const CharSetNode *, StringStream &);
   static int visitConcat(const ConcatNode *, StringStream &);
   static int visitAlt(const AltNode *, StringStream &);
