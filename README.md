@@ -1,4 +1,4 @@
-# Lexy
+# Lexy — Under Development
 
 A lexical analyzer generator. Compiles regex patterns into C++ table-driven scanners.
 
