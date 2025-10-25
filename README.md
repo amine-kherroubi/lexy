@@ -1,6 +1,6 @@
 # Lexy
 
-A table-driven lexical analyzer generator. Compiles regex patterns into C++ scanners with hardcoded transition tables.
+A lexical analyzer generator. Compiles regex patterns into C++ table-driven scanners.
 
 ## What It Does
 
@@ -9,7 +9,7 @@ Lexy takes token specifications and generates standalone C++ scanners. The gener
 **Pipeline:**
 1. Parse `.lexy` token specifications
 2. Build regex ASTs
-3. Convert to NFAs (Thompson's construction)
+3. Convert ASTs to NFAs (Thompson's construction)
 4. Merge multiple NFAs into one
 5. Determinize to DFA (subset construction)
 6. Minimize DFA (Hopcroft's algorithm)
@@ -19,14 +19,7 @@ Lexy takes token specifications and generates standalone C++ scanners. The gener
 
 The generated scanners use a 2D array `TRANSITION_TABLE[state][char] -> next_state` plus an accepting states array. A simple loop walks the input, looks up transitions, and implements longest-match with backtracking.
 
-## Features
-
-### Token Specfication
-```
-TOKEN_NAME ::= "regex_pattern"
-```
-
-### Regex Support
+## Regex Support
 - Operators: `|` `*` `+` `?` concatenation
 - Ranges: `{n,m}` `{n,}`
 - Character classes: `[a-z]` `[^abc]`
@@ -38,7 +31,6 @@ TOKEN_NAME ::= "regex_pattern"
 ```bash
 make                                    # Build generator
 ./scanner_generator.exe input.lexy     # Generate scanner
-make test                               # Run tests
 ```
 
 Requires C++20.
@@ -66,25 +58,12 @@ Token t2 = scanner.getNextToken();  // INTEGER: "123"
 Token t3 = scanner.getNextToken();  // EOF
 ```
 
-## Architecture
-
-```
-src/
-├── automata/               # NFA, DFA, construction, minimization
-├── regex/                  # Regex scanner, parser, AST
-├── user_specifications/    # .lexy file parser
-├── code_generation/        # C++ code emitter
-├── visualization/          # Graphviz (optional)
-└── common/                 # Types, utilities
-```
-
 ## Limitations
 
 - ASCII only (0-127)
 - No table compression
 - No token priority rules
 - No whitespace skipping
-- No context-dependent lexing
 
 ## References
 
