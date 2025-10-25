@@ -1,47 +1,18 @@
-#include "include/automata/dfa.hpp"
-#include "include/automata/dfa_minimizer.hpp"
-#include "include/automata/nfa_determinizer.hpp"
-#include "include/automata/thompson_construction.hpp"
-#include "include/code_generation/code_generator.hpp"
-#include "include/core/helpers.hpp"
-#include "include/regex/ast.hpp"
-#include "include/regex/ast_to_nfa.hpp"
-#include "include/regex/parser.hpp"
-#include "include/regex/scanner.hpp"
-#include "include/user_specifications/user_spec_parser.hpp"
-#include "include/user_specifications/user_spec_scanner.hpp"
+#include "automata/dfa.hpp"
+#include "automata/dfa_minimizer.hpp"
+#include "automata/nfa_determinizer.hpp"
+#include "automata/thompson_construction.hpp"
+#include "code_generation/code_generator.hpp"
+#include "common/helpers.hpp"
+#include "regex/regex_ast.hpp"
+#include "regex/regex_ast_to_nfa.hpp"
+#include "regex/regex_parser.hpp"
+#include "regex/regex_scanner.hpp"
+#include "user_specifications/user_spec_parser.hpp"
+#include "user_specifications/user_spec_scanner.hpp"
 #include <iostream>
-#include <sys/stat.h>
 
 using namespace std;
-
-// Helper function to create directory if it doesn't exist
-void createDirectory(const String &path) {
-#ifdef _WIN32
-  _mkdir(path.c_str());
-#else
-  mkdir(path.c_str(), 0755);
-#endif
-}
-
-// Helper to check .lexy extension
-bool hasLexyExtension(const String &filename) {
-  const String ext = ".lexy";
-  if (filename.size() < ext.size())
-    return false;
-  return filename.compare(filename.size() - ext.size(), ext.size(), ext) == 0;
-}
-
-// Extract base filename from path (strips .lexy extension)
-String getBaseName(const String &path) {
-  size_t slash = path.find_last_of("/\\");
-  size_t start = (slash == String::npos) ? 0 : slash + 1;
-
-  String filename = path.substr(start);
-  size_t lexy_pos = filename.find(".lexy");
-
-  return filename.substr(0, lexy_pos);
-}
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
@@ -69,6 +40,7 @@ int main(int argc, char *argv[]) {
   UserSpecParser user_spec_parser(user_spec_scanner);
   UnorderedMap<String, String> user_token_types = user_spec_parser.parse();
 
+  // Build NFAs in order and track token types in a vector
   Vector<String> token_types;
   Vector<NFA> nfas;
 
@@ -99,19 +71,19 @@ int main(int argc, char *argv[]) {
   cout << "Minimized DFA has " << minimized.getStates().size() << " states"
        << endl;
 
-  // Ensure scanners directory exists
-  createDirectory("scanners");
+  // Ensure generated directory exists
+  createDirectory("generated");
 
-  // Output file path
+  // Output file path - correctly strips .lexy extension
   String base_name = getBaseName(input_filename);
-  String output_filename = "scanners/" + base_name + ".cpp";
+  String output_filename = "generated/" + base_name + ".cpp";
 
   cout << "\nGenerating scanner code to: " << output_filename << endl;
   CodeGenerator::generateScanner(minimized, token_types, output_filename);
 
   cout << "\nScanner generation complete!" << endl;
   cout << "Token types (in order): ";
-  for (size_t i = 0; i < token_types.size(); i++) {
+  for (Index i = 0; i < token_types.size(); i++) {
     cout << token_types[i];
     if (i < token_types.size() - 1)
       cout << ", ";

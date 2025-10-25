@@ -37,13 +37,33 @@
 *.out
 *.app
 
-# debug information files
+# Debug information files
 *.dwo
 
-# Executable
+# Executables
 scanner_generator.exe
+test_scanner.exe
+
+# Build directory
+build/
 
 # Output folders
 graphviz/
 images/
-scanners/
+generated/*.cpp
+generated/*.h
+
+# Keep generated directory itself
+!generated/.gitkeep
+
+# IDE files
+.vscode/
+.vs/
+*.suo
+*.user
+*.sln
+*.vcxproj*
+
+# OS files
+.DS_Store
+Thumbs.db
