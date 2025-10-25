@@ -3,6 +3,7 @@
 #include "include/automata/nfa_determinizer.hpp"
 #include "include/automata/thompson_construction.hpp"
 #include "include/code_generation/code_generator.hpp"
+#include "include/core/helpers.hpp"
 #include "include/regex/ast.hpp"
 #include "include/regex/ast_to_nfa.hpp"
 #include "include/regex/parser.hpp"
@@ -55,8 +56,9 @@ int main() {
     token_types.push_back(token_type);
   }
 
-  CodeGenerator::generateScanner(minimized, token_types,
-                                 "generated_scanner.cpp");
+  // Use the scanner_name for the output filename
+  String output_filename =  + ".cpp";
+  CodeGenerator::generateScanner(minimized, token_types, output_filename);
 
   return 0;
 }

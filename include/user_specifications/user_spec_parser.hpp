@@ -6,8 +6,7 @@
 
 /**
  * Syntax Grammar:
- * specifications ::= DOLLAR SCANNER_NAME NEWLINE specification (NEWLINE
- * specification)* END_OF_INPUT
+ * specifications ::= specification (NEWLINE specification)* END_OF_INPUT
  * specification ::= TOKEN_TYPE DEFINITION_SYMBOL REGEX
  */
 class UserSpecParser {
@@ -16,12 +15,11 @@ private:
   UserSpecToken current_token_;
 
   void consume(UserSpecTokenType);
-  String parse_scanner_name();
   Pair<String, String> parse_specification();
 
 public:
   UserSpecParser(UserSpecScanner &scanner)
       : scanner_(scanner), current_token_(scanner.getNextToken()) {}
 
-  Pair<String, UnorderedMap<String, String>> parse();
+  UnorderedMap<String, String> parse();
 };
