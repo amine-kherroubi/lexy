@@ -40,21 +40,25 @@
 # Debug information files
 *.dwo
 
-# Executables
+# Project executables
 scanner_generator.exe
-test_scanner.exe
+test_myScanner.exe
 
 # Build directory
 build/
 
-# Output folders
-graphviz/
-images/
-generated/*.cpp
-generated/*.h
+# Generated output (keep directories, ignore contents)
+generated/scanners/*.cpp
+generated/scanners/*.h
+generated/graphviz/*.dot
+generated/images/*.png
+generated/images/*.svg
 
-# Keep generated directory itself
+# Keep the directories themselves
 !generated/.gitkeep
+!generated/scanners/.gitkeep
+!generated/graphviz/.gitkeep
+!generated/images/.gitkeep
 
 # IDE files
 .vscode/
@@ -63,7 +67,9 @@ generated/*.h
 *.user
 *.sln
 *.vcxproj*
+.idea/
 
 # OS files
 .DS_Store
 Thumbs.db
+*~

@@ -1,15 +1,15 @@
-#include "automata/dfa.hpp"
-#include "automata/dfa_minimizer.hpp"
-#include "automata/nfa_determinizer.hpp"
-#include "automata/thompson_construction.hpp"
-#include "code_generation/code_generator.hpp"
-#include "common/helpers.hpp"
-#include "regex/regex_ast.hpp"
-#include "regex/regex_ast_to_nfa.hpp"
-#include "regex/regex_parser.hpp"
-#include "regex/regex_scanner.hpp"
-#include "user_specifications/user_spec_parser.hpp"
-#include "user_specifications/user_spec_scanner.hpp"
+#include "src/automata/dfa.hpp"
+#include "src/automata/dfa_minimizer.hpp"
+#include "src/automata/nfa_determinizer.hpp"
+#include "src/automata/thompson_construction.hpp"
+#include "src/code_generation/code_generator.hpp"
+#include "src/common/helpers.hpp"
+#include "src/regex/regex_ast.hpp"
+#include "src/regex/regex_ast_to_nfa.hpp"
+#include "src/regex/regex_parser.hpp"
+#include "src/regex/regex_scanner.hpp"
+#include "src/user_specifications/user_spec_parser.hpp"
+#include "src/user_specifications/user_spec_scanner.hpp"
 #include <iostream>
 
 using namespace std;
@@ -73,10 +73,11 @@ int main(int argc, char *argv[]) {
 
   // Ensure generated directory exists
   createDirectory("generated");
+  createDirectory("generated/scanners");
 
   // Output file path - correctly strips .lexy extension
   String base_name = getBaseName(input_filename);
-  String output_filename = "generated/" + base_name + ".cpp";
+  String output_filename = "generated/scanners/" + base_name + ".cpp";
 
   cout << "\nGenerating scanner code to: " << output_filename << endl;
   CodeGenerator::generateScanner(minimized, token_types, output_filename);

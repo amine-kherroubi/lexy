@@ -1,38 +1,38 @@
 CXX = g++
-CXXFLAGS = -std=c++20 -Wall -Wextra
+CXXFLAGS = -std=c++20 -Wall -Wextra -Isrc
 
-# Source files (now co-located with headers)
+# Source files
 SRCS = main.cpp \
-       automata/nfa.cpp \
-       automata/dfa.cpp \
-       automata/nfa_determinizer.cpp \
-       automata/dfa_minimizer.cpp \
-       automata/thompson_construction.cpp \
-       regex/scanner.cpp \
-       regex/parser.cpp \
-       regex/preprocessor.cpp \
-       regex/ast_to_nfa.cpp \
-       user_specifications/user_spec_scanner.cpp \
-       user_specifications/user_spec_parser.cpp \
-       code_generation/code_generator.cpp \
-       visualization/automata_visualizer.cpp \
-       visualization/regex_ast_visualizer.cpp
+       src/automata/nfa.cpp \
+       src/automata/dfa.cpp \
+       src/automata/nfa_determinizer.cpp \
+       src/automata/dfa_minimizer.cpp \
+       src/automata/thompson_construction.cpp \
+       src/regex/regex_scanner.cpp \
+       src/regex/regex_parser.cpp \
+       src/regex/regex_preprocessor.cpp \
+       src/regex/regex_ast_to_nfa.cpp \
+       src/user_specifications/user_spec_scanner.cpp \
+       src/user_specifications/user_spec_parser.cpp \
+       src/code_generation/code_generator.cpp \
+       src/visualization/automata_visualizer.cpp \
+       src/visualization/regex_ast_visualizer.cpp
 
 # Object files (in build directory)
 BUILD_DIR = build
 OBJS = $(SRCS:%.cpp=$(BUILD_DIR)/%.o)
 
-# Target executable
+# Executables
 TARGET = scanner_generator.exe
-TEST_TARGET = test_scanner.exe
+TEST_TARGET = test_myScanner.exe
 
 # Default target
 all: $(TARGET)
 
-# Link executable
+# Link main executable
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
-	@echo "Build complete: $(TARGET)"
+	@echo "✓ Build complete: $(TARGET)"
 
 # Compile source files
 $(BUILD_DIR)/%.o: %.cpp
@@ -40,32 +40,36 @@ $(BUILD_DIR)/%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Build test scanner
-$(TEST_TARGET): tests/test_scanner.cpp generated/myScanner.cpp
-	$(CXX) $(CXXFLAGS) -o $@ tests/test_scanner.cpp
-	@echo "Test scanner built: $(TEST_TARGET)"
+$(TEST_TARGET): examples/test_myScanner.cpp generated/scanners/myScanner.cpp
+	$(CXX) $(CXXFLAGS) -o $@ examples/test_myScanner.cpp
+	@echo "✓ Test built: $(TEST_TARGET)"
 
 # Clean build artifacts
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET) $(TEST_TARGET)
-	rm -rf graphviz/ images/
+	@echo "✓ Cleaned build artifacts"
 
-# Clean generated scanners too
+# Clean everything including generated files
 cleanall: clean
-	rm -rf generated/*.cpp
+	rm -rf generated/*
+	@echo "✓ Cleaned all generated files"
 
 # Clean and rebuild
 rebuild: clean all
 
 # Create output directories
 dirs:
-	@mkdir -p graphviz images generated
+	@mkdir -p generated/scanners generated/graphviz generated/images
 
 # Generate scanner from example
 generate: $(TARGET) dirs
 	./$(TARGET) examples/myScanner.lexy
+	@echo "✓ Scanner generated"
 
 # Build and run test
 test: generate $(TEST_TARGET)
+	@echo ""
+	@echo "Running tests..."
 	./$(TEST_TARGET)
 
 # Show variables (for debugging)

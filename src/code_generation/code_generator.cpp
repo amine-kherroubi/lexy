@@ -1,4 +1,5 @@
-#include "../../include/code_generation/code_generator.hpp"
+#include "code_generator.hpp"
+#include <fstream>
 #include <iostream>
 
 void CodeGenerator::generateScanner(const DFA &dfa,
@@ -172,7 +173,7 @@ String CodeGenerator::generateScannerClass(const DFA &dfa) {
   string_stream << "        position = start_pos + 1;\n";
   string_stream << "        return {-2, std::string(1, input[start_pos])};\n";
   string_stream << "    }\n";
-  string_stream << "};\n\n";
+  string_stream << "};\n";
 
   return string_stream.str();
 }
