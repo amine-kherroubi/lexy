@@ -16,6 +16,7 @@ SRCS = main.cpp \
        src/visualization/regex_ast_visualizer.cpp \
 	   src/user_specifications/user_spec_scanner.cpp \
 	   src/user_specifications/user_spec_parser.cpp \
+	   src/code_generation/code_generator.cpp
 
 # Object files (in build directory)
 BUILD_DIR = build

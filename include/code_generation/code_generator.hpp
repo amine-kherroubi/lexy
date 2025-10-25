@@ -1,4 +1,5 @@
 #pragma once
+
 #include "../automata/dfa.hpp"
 #include "../core/types.hpp"
 
@@ -9,7 +10,8 @@ public:
 
 private:
   static String generateTransitionTable(const DFA &);
-  static String generateAcceptingStates(const DFA &);
+  static String generateAcceptingStates(const DFA &,
+                                        const UnorderedMap<String, int> &);
   static String generateTokenNames(const Vector<String> &);
   static String generateScannerClass(const DFA &);
 };

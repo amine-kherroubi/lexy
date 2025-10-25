@@ -12,6 +12,12 @@ void CodeGenerator::generateScanner(const DFA &dfa,
     return;
   }
 
+  // Build token name to index mapping
+  UnorderedMap<String, int> token_type_to_index;
+  for (Index i = 0; i < token_types.size(); i++) {
+    token_type_to_index[token_types[i]] = static_cast<int>(i);
+  }
+
   // Write header
   out << "#include <string>\n";
   out << "#include <cstring>\n\n";
@@ -19,9 +25,8 @@ void CodeGenerator::generateScanner(const DFA &dfa,
   // Write transition table
   out << generateTransitionTable(dfa);
 
-  // Write accepting states (need to fix token type indices)
-  // TODO: Map token names to indices properly
-  out << generateAcceptingStates(dfa);
+  // Write accepting states (now with correct token indices)
+  out << generateAcceptingStates(dfa, token_type_to_index);
 
   // Write token names
   out << generateTokenNames(token_types);
@@ -36,7 +41,6 @@ void CodeGenerator::generateScanner(const DFA &dfa,
 String CodeGenerator::generateTransitionTable(const DFA &dfa) {
   StringStream string_stream;
   Size num_states = dfa.getStates().size();
-  Alphabet alphabet = dfa.getAlphabet();
 
   string_stream
       << "// Transition table: [state][symbol] -> next_state (-1 means no "
@@ -48,10 +52,9 @@ String CodeGenerator::generateTransitionTable(const DFA &dfa) {
     StateID from = state.getID();
     string_stream << "    {";
 
-    // For each ASCII character (0-127)
     for (int c = 0; c < 128; c++) {
       StateID next = dfa.getNextState(from, static_cast<char>(c));
-      string_stream << next; // getNextState returns -1 if no transition
+      string_stream << next;
 
       if (c < 127)
         string_stream << ", ";
@@ -67,7 +70,8 @@ String CodeGenerator::generateTransitionTable(const DFA &dfa) {
   return string_stream.str();
 }
 
-String CodeGenerator::generateAcceptingStates(const DFA &dfa) {
+String CodeGenerator::generateAcceptingStates(
+    const DFA &dfa, const UnorderedMap<String, int> &token_type_to_index) {
   StringStream string_stream;
   Size num_states = dfa.getStates().size();
 
@@ -81,7 +85,10 @@ String CodeGenerator::generateAcceptingStates(const DFA &dfa) {
     StateID id = state.getID();
 
     if (dfa.isAccepting(id)) {
-      string_stream << "    0";
+      String token_type = dfa.getTokenType(id);
+      auto it = token_type_to_index.find(token_type);
+      int token_index = (it != token_type_to_index.end()) ? it->second : 0;
+      string_stream << "    " << token_index;
     } else {
       string_stream << "    -1";
     }
@@ -114,7 +121,6 @@ String CodeGenerator::generateTokenNames(const Vector<String> &token_types) {
 
 String CodeGenerator::generateScannerClass(const DFA &dfa) {
   StringStream string_stream;
-  Size num_states = dfa.getStates().size();
   StateID start_state = dfa.getStartStateID();
 
   string_stream << "// Token structure\n";
@@ -124,7 +130,7 @@ String CodeGenerator::generateScannerClass(const DFA &dfa) {
   string_stream << "    std::string lexeme;\n";
   string_stream << "};\n\n";
 
-  string_stream << "clastring_stream Scanner {\n";
+  string_stream << "class Scanner {\n";
   string_stream << "private:\n";
   string_stream << "    const char* input;\n";
   string_stream << "    size_t position;\n";
@@ -146,8 +152,7 @@ String CodeGenerator::generateScannerClass(const DFA &dfa) {
   string_stream << "        int last_accepting_state = -1;\n";
   string_stream << "        size_t last_accepting_pos = position;\n\n";
 
-  string_stream
-      << "        // Maximal munch: scan as far as postring_streamible\n";
+  string_stream << "        // Maximal munch: scan as far as possible\n";
   string_stream << "        while (position < length) {\n";
   string_stream << "            char c = input[position];\n";
   string_stream << "            int next_state = "
