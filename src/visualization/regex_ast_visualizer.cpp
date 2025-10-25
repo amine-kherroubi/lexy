@@ -79,8 +79,7 @@ void RegexASTVisualizer::visualizeAST(const RegexASTNode *root,
   renderDotFile(dot_filename, image_path);
 }
 
-int RegexASTVisualizer::visitNode(const RegexASTNode *node,
-                                  std::ostringstream &dot) {
+int RegexASTVisualizer::visitNode(const RegexASTNode *node, StringStream &dot) {
   if (!node)
     return -1;
 
@@ -108,8 +107,7 @@ int RegexASTVisualizer::visitNode(const RegexASTNode *node,
   return -1;
 }
 
-int RegexASTVisualizer::visitChar(const CharNode *node,
-                                  std::ostringstream &dot) {
+int RegexASTVisualizer::visitChar(const CharNode *node, StringStream &dot) {
   int id = node_counter_++;
   String label = "Char\\n'";
   label += escapeLabel(String(1, node->value_));
@@ -118,14 +116,14 @@ int RegexASTVisualizer::visitChar(const CharNode *node,
   return id;
 }
 
-int RegexASTVisualizer::visitDot(const DotNode *node, std::ostringstream &dot) {
+int RegexASTVisualizer::visitDot(const DotNode *node, StringStream &dot) {
   int id = node_counter_++;
   dot << "  node" << id << " [label=\"Dot\\n(.)\"];\n";
   return id;
 }
 
 int RegexASTVisualizer::visitCharSet(const CharSetNode *node,
-                                     std::ostringstream &dot) {
+                                     StringStream &dot) {
   int id = node_counter_++;
   String label = "CharSet";
   if (node->negated_) {
@@ -151,8 +149,7 @@ int RegexASTVisualizer::visitCharSet(const CharSetNode *node,
   return id;
 }
 
-int RegexASTVisualizer::visitConcat(const ConcatNode *node,
-                                    std::ostringstream &dot) {
+int RegexASTVisualizer::visitConcat(const ConcatNode *node, StringStream &dot) {
   int id = node_counter_++;
   dot << "  node" << id << " [label=\"Concat\"];\n";
 
@@ -169,7 +166,7 @@ int RegexASTVisualizer::visitConcat(const ConcatNode *node,
   return id;
 }
 
-int RegexASTVisualizer::visitAlt(const AltNode *node, std::ostringstream &dot) {
+int RegexASTVisualizer::visitAlt(const AltNode *node, StringStream &dot) {
   int id = node_counter_++;
   dot << "  node" << id << " [label=\"Alt\\n(|)\"];\n";
 
@@ -186,8 +183,7 @@ int RegexASTVisualizer::visitAlt(const AltNode *node, std::ostringstream &dot) {
   return id;
 }
 
-int RegexASTVisualizer::visitStar(const StarNode *node,
-                                  std::ostringstream &dot) {
+int RegexASTVisualizer::visitStar(const StarNode *node, StringStream &dot) {
   int id = node_counter_++;
   dot << "  node" << id << " [label=\"Star\\n(*)\"];\n";
 
@@ -199,8 +195,7 @@ int RegexASTVisualizer::visitStar(const StarNode *node,
   return id;
 }
 
-int RegexASTVisualizer::visitPlus(const PlusNode *node,
-                                  std::ostringstream &dot) {
+int RegexASTVisualizer::visitPlus(const PlusNode *node, StringStream &dot) {
   int id = node_counter_++;
   dot << "  node" << id << " [label=\"Plus\\n(+)\"];\n";
 
@@ -213,7 +208,7 @@ int RegexASTVisualizer::visitPlus(const PlusNode *node,
 }
 
 int RegexASTVisualizer::visitQuestion(const QuestionNode *node,
-                                      std::ostringstream &dot) {
+                                      StringStream &dot) {
   int id = node_counter_++;
   dot << "  node" << id << " [label=\"Question\\n(?)\"];\n";
 
@@ -225,8 +220,7 @@ int RegexASTVisualizer::visitQuestion(const QuestionNode *node,
   return id;
 }
 
-int RegexASTVisualizer::visitRange(const RangeNode *node,
-                                   std::ostringstream &dot) {
+int RegexASTVisualizer::visitRange(const RangeNode *node, StringStream &dot) {
   int id = node_counter_++;
   String label = "Range\\n{" + std::to_string(node->min_) + ",";
   if (node->max_ == -1) {

@@ -16,14 +16,14 @@ private:
   static void renderDotFile(const String &, const String &,
                             const String & = "png");
 
-  static int visitNode(const RegexASTNode *, std::ostringstream &);
-  static int visitChar(const CharNode *, std::ostringstream &);
-  static int visitDot(const DotNode *, std::ostringstream &);
-  static int visitCharSet(const CharSetNode *, std::ostringstream &);
-  static int visitConcat(const ConcatNode *, std::ostringstream &);
-  static int visitAlt(const AltNode *, std::ostringstream &);
-  static int visitStar(const StarNode *, std::ostringstream &);
-  static int visitPlus(const PlusNode *, std::ostringstream &);
-  static int visitQuestion(const QuestionNode *, std::ostringstream &);
-  static int visitRange(const RangeNode *, std::ostringstream &);
+  static int visitNode(const RegexASTNode *, StringStream &);
+  static int visitChar(const CharNode *, StringStream &);
+  static int visitDot(const DotNode *, StringStream &);
+  static int visitCharSet(const CharSetNode *, StringStream &);
+  static int visitConcat(const ConcatNode *, StringStream &);
+  static int visitAlt(const AltNode *, StringStream &);
+  static int visitStar(const StarNode *, StringStream &);
+  static int visitPlus(const PlusNode *, StringStream &);
+  static int visitQuestion(const QuestionNode *, StringStream &);
+  static int visitRange(const RangeNode *, StringStream &);
 };

@@ -20,6 +20,7 @@ using UnorderedMap = std::unordered_map<Key, Value>;
 template <typename T> using Pointer = std::unique_ptr<T>;
 template <typename T1, typename T2> using Pair = std::pair<T1, T2>;
 using File = std::basic_ifstream<char>;
+using StringStream = std::ostringstream;
 
 using String = std::string;
 

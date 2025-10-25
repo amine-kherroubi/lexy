@@ -2,6 +2,7 @@
 #include "include/automata/dfa_minimizer.hpp"
 #include "include/automata/nfa_determinizer.hpp"
 #include "include/automata/thompson_construction.hpp"
+#include "include/code_generation/code_generator.hpp"
 #include "include/regex/ast.hpp"
 #include "include/regex/ast_to_nfa.hpp"
 #include "include/regex/parser.hpp"
@@ -38,8 +39,6 @@ int main() {
 
   Vector<NFA> nfas;
   for (const auto &[token_type, regex] : user_token_types) {
-    cout << "Processing token type: " << token_type << " with regex: " << regex
-         << endl;
     RegexScanner regex_scanner(regex);
     RegexParser regex_parser(regex_scanner);
     Pointer<RegexASTNode> regex_ast = regex_parser.parse();
@@ -48,15 +47,16 @@ int main() {
   }
 
   NFA merged_nfa = ThompsonConstruction::mergeAll(nfas);
+  DFA dfa = NFADeterminizer::determinize(merged_nfa);
+  DFA minimized = DFAMinimizer::minimize(dfa);
 
-  cout << "Successfully created merged NFA with "
-       << merged_nfa.getStates().size() << " states" << endl;
-
-  // Print accepting states and their token types
-  cout << "Accepting states:" << endl;
-  for (StateID id : merged_nfa.getAcceptingStateIDs()) {
-    cout << "  State " << id << " -> " << merged_nfa.getTokenType(id) << endl;
+  Vector<String> token_types;
+  for (const auto &[token_type, regex] : user_token_types) {
+    token_types.push_back(token_type);
   }
+
+  CodeGenerator::generateScanner(minimized, token_types,
+                                 "generated_scanner.cpp");
 
   return 0;
 }
