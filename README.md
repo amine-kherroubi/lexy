@@ -20,10 +20,10 @@ Lexy takes token specifications and generates standalone C++ scanners. The gener
 The generated scanners use a 2D array `TRANSITION_TABLE[state][char] -> next_state` plus an accepting states array. A simple loop walks the input, looks up transitions, and implements longest-match with backtracking.
 
 ## Regex Support
-- Operators: `|` `*` `+` `?` concatenation
-- Ranges: `{n,m}` `{n,}`
-- Character classes: `[a-z]` `[^abc]`
-- Escapes: `\n` `\t` `\\` and metacharacters
+- Operators: `|`, `*`, `+`, `?`, and concatenation
+- Ranges: `{n,m}`, `{n,}`
+- Character classes: `[a-z]`, `[^abc]`
+- Escapes: `\n`, `\t`, `\\`, and metacharacters
 - Wildcard: `.`
 
 ## Build & Run
