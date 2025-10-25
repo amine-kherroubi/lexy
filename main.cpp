@@ -32,22 +32,15 @@ bool hasLexyExtension(const String &filename) {
   return filename.compare(filename.size() - ext.size(), ext.size(), ext) == 0;
 }
 
-// Helper to replace extension with .cpp
-String replaceExtensionWithCpp(const String &filename) {
-  size_t pos = filename.rfind('.');
-  if (pos == String::npos)
-    return filename + ".cpp";
-  return filename.substr(0, pos) + ".cpp";
-}
-
-// Extract base filename from path
+// Extract base filename from path (strips .lexy extension)
 String getBaseName(const String &path) {
   size_t slash = path.find_last_of("/\\");
-  size_t dot = path.find_last_of('.');
-  if (dot == String::npos || dot < slash)
-    dot = path.size();
-  return path.substr(slash == String::npos ? 0 : slash + 1,
-                     dot - (slash == String::npos ? 0 : slash + 1));
+  size_t start = (slash == String::npos) ? 0 : slash + 1;
+
+  String filename = path.substr(start);
+  size_t lexy_pos = filename.find(".lexy");
+
+  return filename.substr(0, lexy_pos);
 }
 
 int main(int argc, char *argv[]) {
@@ -70,27 +63,41 @@ int main(int argc, char *argv[]) {
 
   String specifications((istreambuf_iterator<char>(spec_file)),
                         istreambuf_iterator<char>());
+  spec_file.close();
 
   UserSpecScanner user_spec_scanner(specifications);
   UserSpecParser user_spec_parser(user_spec_scanner);
   UnorderedMap<String, String> user_token_types = user_spec_parser.parse();
 
+  Vector<String> token_types;
   Vector<NFA> nfas;
+
   for (const auto &[token_type, regex] : user_token_types) {
+    cout << "Processing token: " << token_type << " with regex: " << regex
+         << endl;
+
     RegexScanner regex_scanner(regex);
     RegexParser regex_parser(regex_scanner);
     Pointer<RegexASTNode> regex_ast = regex_parser.parse();
     NFA nfa = RegexASTToNFA::convert(regex_ast, token_type);
+
     nfas.push_back(nfa);
+    token_types.push_back(token_type);
   }
 
+  cout << "\nBuilding merged automaton..." << endl;
   NFA merged_nfa = ThompsonConstruction::mergeAll(nfas);
-  DFA dfa = NFADeterminizer::determinize(merged_nfa);
-  DFA minimized = DFAMinimizer::minimize(dfa);
+  cout << "Merged NFA has " << merged_nfa.getStates().size() << " states"
+       << endl;
 
-  Vector<String> token_types;
-  for (const auto &[token_type, regex] : user_token_types)
-    token_types.push_back(token_type);
+  cout << "Determinizing..." << endl;
+  DFA dfa = NFADeterminizer::determinize(merged_nfa);
+  cout << "DFA has " << dfa.getStates().size() << " states" << endl;
+
+  cout << "Minimizing..." << endl;
+  DFA minimized = DFAMinimizer::minimize(dfa);
+  cout << "Minimized DFA has " << minimized.getStates().size() << " states"
+       << endl;
 
   // Ensure scanners directory exists
   createDirectory("scanners");
@@ -99,7 +106,17 @@ int main(int argc, char *argv[]) {
   String base_name = getBaseName(input_filename);
   String output_filename = "scanners/" + base_name + ".cpp";
 
+  cout << "\nGenerating scanner code to: " << output_filename << endl;
   CodeGenerator::generateScanner(minimized, token_types, output_filename);
+
+  cout << "\nScanner generation complete!" << endl;
+  cout << "Token types (in order): ";
+  for (size_t i = 0; i < token_types.size(); i++) {
+    cout << token_types[i];
+    if (i < token_types.size() - 1)
+      cout << ", ";
+  }
+  cout << endl;
 
   return 0;
 }
