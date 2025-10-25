@@ -46,3 +46,4 @@ scanner_generator.exe
 # Output folders
 graphviz/
 images/
+scanners/

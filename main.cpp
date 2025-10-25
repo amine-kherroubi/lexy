@@ -24,10 +24,47 @@ void createDirectory(const String &path) {
 #endif
 }
 
-int main() {
-  File spec_file("tokens.spec");
+// Helper to check .lexy extension
+bool hasLexyExtension(const String &filename) {
+  const String ext = ".lexy";
+  if (filename.size() < ext.size())
+    return false;
+  return filename.compare(filename.size() - ext.size(), ext.size(), ext) == 0;
+}
+
+// Helper to replace extension with .cpp
+String replaceExtensionWithCpp(const String &filename) {
+  size_t pos = filename.rfind('.');
+  if (pos == String::npos)
+    return filename + ".cpp";
+  return filename.substr(0, pos) + ".cpp";
+}
+
+// Extract base filename from path
+String getBaseName(const String &path) {
+  size_t slash = path.find_last_of("/\\");
+  size_t dot = path.find_last_of('.');
+  if (dot == String::npos || dot < slash)
+    dot = path.size();
+  return path.substr(slash == String::npos ? 0 : slash + 1,
+                     dot - (slash == String::npos ? 0 : slash + 1));
+}
+
+int main(int argc, char *argv[]) {
+  if (argc < 2) {
+    cerr << "Usage: " << argv[0] << " <input_file.lexy>" << endl;
+    return -1;
+  }
+
+  String input_filename = argv[1];
+  if (!hasLexyExtension(input_filename)) {
+    cerr << "Error: input file must have .lexy extension" << endl;
+    return -1;
+  }
+
+  File spec_file(input_filename);
   if (!spec_file.is_open()) {
-    cerr << "Failed to open 'tokens.spec' for reading" << endl;
+    cerr << "Failed to open '" << input_filename << "' for reading" << endl;
     return -1;
   }
 
@@ -52,12 +89,16 @@ int main() {
   DFA minimized = DFAMinimizer::minimize(dfa);
 
   Vector<String> token_types;
-  for (const auto &[token_type, regex] : user_token_types) {
+  for (const auto &[token_type, regex] : user_token_types)
     token_types.push_back(token_type);
-  }
 
-  // Use the scanner_name for the output filename
-  String output_filename =  + ".cpp";
+  // Ensure scanners directory exists
+  createDirectory("scanners");
+
+  // Output file path
+  String base_name = getBaseName(input_filename);
+  String output_filename = "scanners/" + base_name + ".cpp";
+
   CodeGenerator::generateScanner(minimized, token_types, output_filename);
 
   return 0;
