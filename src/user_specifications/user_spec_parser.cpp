@@ -12,7 +12,8 @@ void UserSpecParser::consume(UserSpecTokenType expected) {
   current_token_ = scanner_.getNextToken();
 }
 
-UnorderedMap<String, String> UserSpecParser::parse() {
+Pair<String, UnorderedMap<String, String>> UserSpecParser::parse() {
+  String scanner_name = parse_scanner_name();
   UnorderedMap<String, String> specifications = {parse_specification()};
   while (current_token_.getType() == UserSpecTokenType::NEWLINE) {
     consume(UserSpecTokenType::NEWLINE);
@@ -21,7 +22,15 @@ UnorderedMap<String, String> UserSpecParser::parse() {
     specifications.insert(parse_specification());
   }
 
-  return specifications;
+  return {scanner_name, specifications};
+}
+
+String UserSpecParser::parse_scanner_name() {
+  consume(UserSpecTokenType::DOLLAR);
+  String scanner_name = current_token_.getLexeme();
+  consume(UserSpecTokenType::NEWLINE);
+
+  return scanner_name;
 }
 
 Pair<String, String> UserSpecParser::parse_specification() {

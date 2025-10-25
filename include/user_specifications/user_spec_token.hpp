@@ -3,6 +3,8 @@
 #include "../core/types.hpp"
 
 enum class UserSpecTokenType {
+  DOLLAR,
+  SCANNER_NAME,
   TOKEN_TYPE,
   DEFINITION_SYMBOL,
   REGEX,

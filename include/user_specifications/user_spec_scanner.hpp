@@ -5,6 +5,8 @@
 
 /**
  * Lexical Grammar:
+ * DOLLAR ::= \$
+ * SCANNER_NAME ::= [A-Z_+]
  * TOKEN_TYPE ::= [A-Z_]+
  * DEFINITION_SYMBOL ::= ::=
  * REGEX ::= "([^"\\]|\\.)*"
@@ -19,6 +21,7 @@ private:
   char advance();
   char peek() const;
   bool isAtEnd() const;
+  UserSpecToken scanUserScannerName();
   UserSpecToken scanUserTokenType();
   UserSpecToken scanDefinitionSymbol();
   UserSpecToken scanUserRegex();

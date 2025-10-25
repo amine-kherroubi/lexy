@@ -1,6 +1,5 @@
 #include "../../include/user_specifications/user_spec_scanner.hpp"
 #include <cctype>
-#include <stdexcept>
 
 char UserSpecScanner::advance() {
   if (isAtEnd())
@@ -32,6 +31,22 @@ UserSpecToken UserSpecScanner::scanUserTokenType() {
   }
 
   return {UserSpecTokenType::TOKEN_TYPE, token_type};
+}
+
+UserSpecToken UserSpecScanner::scanUserScannerName() {
+  String scanner_name;
+  scanner_name.push_back(specifications_[position_ - 1]);
+
+  while (!isAtEnd()) {
+    char next = peek();
+    if (std::isupper(static_cast<unsigned char>(next)) || next == '_') {
+      scanner_name.push_back(advance());
+    } else {
+      break;
+    }
+  }
+
+  return {UserSpecTokenType::SCANNER_NAME, scanner_name};
 }
 
 UserSpecToken UserSpecScanner::scanDefinitionSymbol() {
@@ -76,6 +91,9 @@ UserSpecToken UserSpecScanner::getNextToken() {
 
   if (current == '\n')
     return {UserSpecTokenType::NEWLINE, "\n"};
+
+  if (current == '$')
+    return {UserSpecTokenType::DOLLAR, "$"};
 
   if (current == '"')
     return scanUserRegex();
