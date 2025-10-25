@@ -1,108 +1,93 @@
-# Scanner Generator
+# Lexy
 
-A C++ implementation exploring the theoretical foundations of lexical analysis through finite automata construction.
+A table-driven lexical analyzer generator. Compiles regex patterns into C++ scanners with hardcoded transition tables.
 
-## Project Status
+## What It Does
 
-**Theoretical Implementation Complete, Lexer Generation In Progress**
+Lexy takes token specifications and generates standalone C++ scanners. The generated code uses transition tables to recognize tokens—same approach as Lex/Flex.
 
-Currently implements the full automata construction pipeline but does not yet generate actual lexer code. Right now it builds and merges the automata structures in memory—the next phase is outputting executable scanner code.
+**Pipeline:**
+1. Parse `.lexy` token specifications
+2. Build regex ASTs
+3. Convert to NFAs (Thompson's construction)
+4. Merge multiple NFAs into one
+5. Determinize to DFA (subset construction)
+6. Minimize DFA (Hopcroft's algorithm)
+7. Generate C++ code with transition tables
 
-## What This Actually Does
+**Table-Driven Design:**
 
-This is a deep dive into formal language theory and compiler construction. The project implements the classic regex-to-automata pipeline:
+The generated scanners use a 2D array `TRANSITION_TABLE[state][char] -> next_state` plus an accepting states array. A simple loop walks the input, looks up transitions, and implements longest-match with backtracking.
 
-1. **Lexical Analysis of Regex**: Custom scanner tokenizes regex patterns (handles escaping, operators, character classes)
-2. **Regex Parsing**: Recursive descent parser builds Abstract Syntax Trees from token streams
-3. **Thompson's Construction**: Converts AST nodes into NFAs using the elegant compositional approach—each operator has its own NFA fragment that connects via epsilon transitions
-4. **Subset Construction**: The classic powerset construction algorithm that determinizes NFAs by tracking sets of states
-5. **Hopcroft's Algorithm**: Minimizes DFAs through iterative partition refinement based on transition equivalence classes
+## Features
 
-The theoretical heavy lifting is done. What's missing is the code generator that outputs actual C/C++ scanner functions.
-
-## Features Implemented
-
-### Regex Support
-- Core operators: `|` (alternation), concatenation, `*` (Kleene star), `+` (one or more), `?` (optional)
-- Quantifiers: `{n,m}` ranges with unbounded support (`{n,}`)
-- Character classes: `[a-z]`, `[0-9]`, `[^abc]` (negated sets)
-- Escape sequences: `\n`, `\t`, `\\`, and metacharacter escaping
-- Wildcard: `.` (matches printable ASCII 32-126)
-
-### Automata Construction
-- Thompson's construction with proper epsilon-NFA handling
-- Multi-NFA merging with shared start state (for multiple token types)
-- Epsilon closure computation
-- Determinization preserving token type information
-- State minimization with reachability analysis
-
-### Token Specification Format
-Simple DSL for defining tokens:
+### Token Specfication
 ```
 TOKEN_NAME ::= "regex_pattern"
 ```
 
-Multiple tokens are merged into a single automaton with a common start state.
+### Regex Support
+- Operators: `|` `*` `+` `?` concatenation
+- Ranges: `{n,m}` `{n,}`
+- Character classes: `[a-z]` `[^abc]`
+- Escapes: `\n` `\t` `\\` and metacharacters
+- Wildcard: `.`
 
-## Current Output
-
-The program reads `tokens.spec`, builds the complete merged NFA, and reports:
-- Total state count
-- Accepting states mapped to token types
-
-No lexer code is generated yet—that's the next major milestone.
-
-## Build
+## Build & Run
 
 ```bash
-make           # Build
-make clean     # Clean artifacts
-make rebuild   # Clean and build
+make                                    # Build generator
+./scanner_generator.exe input.lexy     # Generate scanner
+make test                               # Run tests
 ```
 
-Requires C++20 for concepts, ranges, and cleaner template syntax.
+Requires C++20.
 
 ## Example
 
-Given `tokens.spec`:
+**Input** (`examples/myScanner.lexy`):
 ```
 IDENTIFIER ::= "[a-zA-Z_][a-zA-Z0-9_]*"
 INTEGER ::= "0|[1-9][0-9]*"
 ```
 
-Running `./scanner_generator.exe` produces:
-```
-Processing token type: IDENTIFIER with regex: [a-zA-Z_][a-zA-Z0-9_]*
-Processing token type: INTEGER with regex: 0|[1-9][0-9]*
-Successfully created merged NFA with 47 states
-Accepting states:
-  State 23 -> IDENTIFIER
-  State 46 -> INTEGER
+**Generate:**
+```bash
+./scanner_generator.exe examples/myScanner.lexy
 ```
 
-## Visualization Support
+**Output:** `generated/scanners/myScanner.cpp`
 
-The codebase includes Graphviz integration (see `visualization/` modules) for rendering automata as graphs. Currently unused in main but available for debugging NFA/DFA structures.
+**Test:**
+```cpp
+Scanner scanner("hello123");
+Token t1 = scanner.getNextToken();  // IDENTIFIER: "hello"
+Token t2 = scanner.getNextToken();  // INTEGER: "123"
+Token t3 = scanner.getNextToken();  // EOF
+```
 
-## Architecture Highlights
+## Architecture
 
-- **Clean separation**: Regex parsing is independent of automata construction
-- **Visitor pattern**: AST-to-NFA conversion uses visitor-style dispatch
-- **Immutable operations**: Thompson's construction creates new automata rather than mutating
-- **Type safety**: Strong typing throughout (StateID, Symbol, Superstate types)
+```
+src/
+├── automata/               # NFA, DFA, construction, minimization
+├── regex/                  # Regex scanner, parser, AST
+├── user_specifications/    # .lexy file parser
+├── code_generation/        # C++ code emitter
+├── visualization/          # Graphviz (optional)
+└── common/                 # Types, utilities
+```
 
-## What's Missing
+## Limitations
 
-1. **Code generation**: Output C/C++ scanner functions with transition tables
-2. **Token priority**: Longest match and rule precedence
-3. **Error handling**: Better diagnostics for invalid regex/specs
-4. **Optimization**: Transition table compression, default transitions
-5. **Unicode**: Currently ASCII-only
+- ASCII only (0-127)
+- No table compression
+- No token priority rules
+- No whitespace skipping
+- No context-dependent lexing
 
-## Theory References
+## References
 
-This implementation closely follows the algorithms described in:
-- Aho, Sethi, Ullman - "Compilers: Principles, Techniques, and Tools" (The Dragon Book)
-- Hopcroft, Ullman - "Introduction to Automata Theory, Languages, and Computation"
-
-The subset construction and minimization are textbook implementations—if you want to understand how these algorithms actually work in practice, this codebase is a pretty direct translation of the theory.
+- Aho, Sethi, Ullman - *Compilers: Principles, Techniques, and Tools* (Dragon Book)
+- Cooper & Torczon - *Engineering a Compiler*
+- Hopcroft, Motwani, Ullman - *Introduction to Automata Theory*
