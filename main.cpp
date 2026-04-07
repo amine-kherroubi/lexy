@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
   createDirectory("generated");
   createDirectory("generated/scanners");
 
-  // Output file path - correctly strips .lexy extension
+  // Output file path
   String base_name = getBaseName(input_filename);
   String output_filename = "generated/scanners/" + base_name + ".cpp";
 
