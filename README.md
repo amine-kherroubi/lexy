@@ -1,71 +1,97 @@
 # Lexy
 
-A lexical analyzer generator. Compiles regex patterns into C++ table-driven scanners.
+Lexy is a professional-grade lexical analyzer generator that compiles regular expression specifications into efficient, table-driven C++ scanners.
 
-## What It Does
+## Features
 
-Lexy takes token specifications and generates standalone C++ scanners. The generated code uses transition tables to recognize tokens—same approach as Lex/Flex.
+- **Standardized Build System**: Uses CMake for cross-platform portability.
+- **Professional CLI**: Flexible input/output configuration via command-line arguments.
+- **Automata Visualization**: Optional generation of visual representations (Graphviz) of NFA and DFA construction stages.
+- **Header-Driven**: Designed for integration into larger compiler projects.
 
-**Pipeline:**
-1. Parse `.lexy` token specifications
-2. Build regex ASTs
-3. Convert ASTs to NFAs (Thompson's construction)
-4. Merge multiple NFAs into one
-5. Determinize to DFA (subset construction)
-6. Minimize DFA (Hopcroft's algorithm)
-7. Generate C++ code with transition tables
+## Prerequisites
 
-**Table-Driven Design:**
+- C++20 compatible compiler (e.g., `g++` or `clang++`)
+- `cmake` (>= 3.10)
+- Graphviz (`dot` command, optional for visualization)
 
-The generated scanners use a 2D array `TRANSITION_TABLE[state][char] -> next_state` plus an accepting states array. A simple loop walks the input, looks up transitions, and implements longest-match with backtracking.
+## Installation
 
-## Regex Support
-- Operators: `|`, `*`, `+`, `?`, and concatenation
-- Ranges: `{n,m}`, `{n,}`
-- Character classes: `[a-z]`, `[^abc]`
-- Escapes: `\n`, `\t`, `\\`, and metacharacters
-- Wildcard: `.`
+### From Source
 
-## Build & Run
-
-### Prerequisites
-- C++20 compatible compiler (e.g., `clang++`)
-- `make`
-- Graphviz (`dot` command for visualization)
-
-### Building the Generator
 ```bash
+mkdir build && cd build
+cmake ..
 make
+sudo make install  # Installs the 'lexy' binary to /usr/local/bin
 ```
 
-### Generating a Scanner
+Alternatively, you can run the `lexy` executable directly from the `build` directory.
+
+## Usage
+
 ```bash
-./scanner_generator.exe <path_to_spec.lexy>
+lexy <input_spec.lexy> [options]
 ```
-The generated scanner will be located in `generated/scanners/`, and visual representations of the constructed automata (NFA, DFA, and Minimized DFA) will be generated in `generated/images/`.
+
+**Options:**
+- `<input_spec.lexy>`: Input specification file (required).
+- `-o <dir>`: Output directory for scanner code and visualizations (default: `./output`).
+- `-g`: Enable automata graph generation (disabled by default).
+- `-h`: Show help message.
+
+## Example
+
+**Input** (`scanner.lexy`):
+```lexy
+IDENTIFIER ::= "[a-zA-Z_][a-zA-Z0-9_]*"
+INTEGER    ::= "0|[1-9][0-9]*"
+```
+
+**Run (with graph generation):**
+```bash
+lexy scanner.lexy -o ./build_scanner -g
+```
+
+This will generate:
+- `build_scanner/scanners/scanner.cpp` (The scanner code)
+- `build_scanner/images/` (Visualizations: `nfa.png`, `dfa.png`, `dfa_minimized.png`)
 
 ## Testing
 
-To verify the correct functionality of the scanner generator and the generated code, execute the following command:
+The project includes a test suite to verify both the CLI generator and the generated scanners.
+
+### Running Tests
 
 ```bash
-make test
+./tests/test.sh
 ```
 
-This command automatically performs the following steps:
-1. Rebuilds the generator if necessary.
-2. Generates the scanner based on the example specification (`examples/myScanner.lexy`).
-3. Compiles the test program (`examples/test_myScanner.cpp`).
-4. Executes the test suite and validates output against expected token sequences.
+This script will:
+1. Build the `lexy` executable.
+2. Run the generator on `tests/myScanner.lexy`.
+3. Verify the generation of scanner code and visualization files.
+4. Compile and run the generated scanner test (`tests/test_myScanner.cpp`).
 
-Successful execution will indicate `12/12 passed` for the provided test cases.
+## Example
 
-## Limitations
+**Input** (`tests/myScanner.lexy`):
+```lexy
+IDENTIFIER ::= "[a-zA-Z_][a-zA-Z0-9_]*"
+INTEGER    ::= "0|[1-9][0-9]*"
+```
 
-- ASCII only (0-127)
-- No table compression
-- No token priority rules
-- No whitespace skipping
+**Run (with graph generation):**
+```bash
+lexy tests/myScanner.lexy -o ./build_scanner -g
+```
+
+
+This script will:
+1. Build the `lexy` executable.
+2. Run the generator on `examples/myScanner.lexy`.
+3. Verify the generation of scanner code and visualization files.
+4. Compile and run the generated scanner test (`tests/test_myScanner.cpp`).
 
 ## References
 

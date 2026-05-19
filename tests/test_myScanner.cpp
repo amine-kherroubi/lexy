@@ -1,4 +1,4 @@
-#include "../generated/scanners/myScanner.cpp"
+#include "../build/scanners/myScanner.cpp"
 #include <iostream>
 #include <string>
 #include <vector>

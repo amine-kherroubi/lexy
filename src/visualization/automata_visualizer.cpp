@@ -1,7 +1,10 @@
 #include "automata_visualizer.hpp"
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 
 using namespace std;
+namespace fs = std::filesystem;
 
 String AutomataVisualizer::escapeLabel(Symbol symbol) {
   if (symbol == '"')
@@ -24,7 +27,6 @@ void AutomataVisualizer::generateDotFile(const String &dot_content,
   }
   file << dot_content;
   file.close();
-  cout << "Generated DOT file: " << filename << endl;
 }
 
 void AutomataVisualizer::renderDotFile(const String &dot_filename,
@@ -37,6 +39,7 @@ void AutomataVisualizer::renderDotFile(const String &dot_filename,
   int result = system(command.c_str());
   if (result == 0) {
     cout << "Rendered visualization: " << output_file << endl;
+    fs::remove(dot_filename);
   } else {
     cerr << "Error: Failed to render with Graphviz. Make sure 'dot' is "
             "installed."

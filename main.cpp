@@ -11,25 +11,61 @@
 #include "src/user_specifications/user_spec_parser.hpp"
 #include "src/user_specifications/user_spec_scanner.hpp"
 #include "src/visualization/automata_visualizer.hpp"
+#include <filesystem>
+#include <getopt.h>
 #include <iostream>
 
+namespace fs = std::filesystem;
 using namespace std;
 
+void printUsage(const char *progName) {
+  cout << "Usage: " << progName << " <input_file.lexy> [options]\n"
+       << "Options:\n"
+       << "  -o <dir>     Output directory for generated files (default: "
+          "./output)\n"
+       << "  -g           Enable automata graph generation\n"
+       << "  -h           Show this help message\n";
+}
+
 int main(int argc, char *argv[]) {
-  if (argc < 2) {
-    cerr << "Usage: " << argv[0] << " <input_file.lexy>" << endl;
+  String input_filename;
+  String output_dir = "output";
+  bool generate_graphs = false;
+
+  int opt;
+  while ((opt = getopt(argc, argv, "o:gh")) != -1) {
+    switch (opt) {
+    case 'o':
+      output_dir = optarg;
+      break;
+    case 'g':
+      generate_graphs = true;
+      break;
+    case 'h':
+      printUsage(argv[0]);
+      return 0;
+    default:
+      printUsage(argv[0]);
+      return -1;
+    }
+  }
+
+  if (optind < argc) {
+    input_filename = argv[optind];
+  } else {
+    cerr << "Error: Missing input file.\n";
+    printUsage(argv[0]);
     return -1;
   }
 
-  String input_filename = argv[1];
   if (!hasLexyExtension(input_filename)) {
-    cerr << "Error: input file must have .lexy extension" << endl;
+    cerr << "Error: Input file must have .lexy extension.\n";
     return -1;
   }
 
   File spec_file(input_filename);
   if (!spec_file.is_open()) {
-    cerr << "Failed to open '" << input_filename << "' for reading" << endl;
+    cerr << "Error: Failed to open '" << input_filename << "' for reading.\n";
     return -1;
   }
 
@@ -41,67 +77,56 @@ int main(int argc, char *argv[]) {
   UserSpecParser user_spec_parser(user_spec_scanner);
   UnorderedMap<String, String> user_token_types = user_spec_parser.parse();
 
-  // Build NFAs in order and track token types in a vector
   Vector<String> token_types;
   Vector<NFA> nfas;
 
   for (const auto &[token_type, regex] : user_token_types) {
-    cout << "Processing token: " << token_type << " with regex: " << regex
-         << endl;
-
+    cout << "Processing token: " << token_type << endl;
     RegexScanner regex_scanner(regex);
     RegexParser regex_parser(regex_scanner);
     Pointer<RegexASTNode> regex_ast = regex_parser.parse();
     NFA nfa = RegexASTToNFA::convert(regex_ast, token_type);
-
     nfas.push_back(nfa);
     token_types.push_back(token_type);
   }
 
-  cout << "\nBuilding merged automaton..." << endl;
   NFA merged_nfa = ThompsonConstruction::mergeAll(nfas);
-  cout << "Merged NFA has " << merged_nfa.getStates().size() << " states"
-       << endl;
-
-  cout << "Determinizing..." << endl;
   DFA dfa = NFADeterminizer::determinize(merged_nfa);
-  cout << "DFA has " << dfa.getStates().size() << " states" << endl;
-
-  cout << "Minimizing..." << endl;
   DFA minimized = DFAMinimizer::minimize(dfa);
-  cout << "Minimized DFA has " << minimized.getStates().size() << " states"
-       << endl;
 
-  // Ensure generated directory exists
-  createDirectory("generated");
-  createDirectory("generated/scanners");
-  createDirectory("generated/graphviz");
-  createDirectory("generated/images");
+  // Setup output structure
+  fs::path out_path(output_dir);
+  fs::path scanner_path = out_path / "scanners";
+  fs::create_directories(scanner_path);
 
-  // Output file path
+  if (generate_graphs) {
+    fs::path graphviz_path = out_path / "graphviz";
+    fs::path images_path = out_path / "images";
+    fs::create_directories(graphviz_path);
+    fs::create_directories(images_path);
+
+#ifdef HAVE_GRAPHVIZ
+    AutomataVisualizer::visualizeNFA(merged_nfa,
+                                     (graphviz_path / "nfa").string(),
+                                     (images_path / "nfa").string());
+    AutomataVisualizer::visualizeDFA(dfa, (graphviz_path / "dfa").string(),
+                                     (images_path / "dfa").string());
+    AutomataVisualizer::visualizeDFA(minimized,
+                                     (graphviz_path / "dfa_minimized").string(),
+                                     (images_path / "dfa_minimized").string());
+
+    fs::remove_all(graphviz_path); // Cleanup temporary graphviz directory
+#else
+    cout << "Warning: Graph generation requested but Graphviz (dot) not "
+            "found.\n";
+#endif
+  }
+
   String base_name = getBaseName(input_filename);
-  String output_filename = "generated/scanners/" + base_name + ".cpp";
+  String output_filename = (scanner_path / (base_name + ".cpp")).string();
 
-  // Visualize
-  AutomataVisualizer::visualizeNFA(merged_nfa, "generated/graphviz/nfa",
-                                   "generated/images/nfa");
-  AutomataVisualizer::visualizeDFA(dfa, "generated/graphviz/dfa",
-                                   "generated/images/dfa");
-  AutomataVisualizer::visualizeDFA(minimized,
-                                   "generated/graphviz/dfa_minimized",
-                                   "generated/images/dfa_minimized");
-
-  cout << "\nGenerating scanner code to: " << output_filename << endl;
   CodeGenerator::generateScanner(minimized, token_types, output_filename);
 
-  cout << "\nScanner generation complete!" << endl;
-  cout << "Token types (in order): ";
-  for (Index i = 0; i < token_types.size(); i++) {
-    cout << token_types[i];
-    if (i < token_types.size() - 1)
-      cout << ", ";
-  }
-  cout << endl;
-
+  cout << "\nScanner generated successfully in: " << output_filename << endl;
   return 0;
 }
