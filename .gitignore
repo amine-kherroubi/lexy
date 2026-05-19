@@ -47,6 +47,9 @@ test_myScanner.exe
 # Build directory
 build/
 
+# Cache files
+.cache
+
 # Generated output (keep directories, ignore contents)
 generated/scanners/*.cpp
 generated/scanners/*.h
