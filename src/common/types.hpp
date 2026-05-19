@@ -25,7 +25,6 @@ using StringStream = std::ostringstream;
 
 using String = std::string;
 
-using StateID = int;
 using StateIDs = Vector<StateID>;
 using States = Vector<State>;
 

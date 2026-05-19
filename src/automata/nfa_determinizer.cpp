@@ -1,4 +1,5 @@
 #include "nfa_determinizer.hpp"
+#include <climits>
 
 Closure NFADeterminizer::epsilonClosure(const NFA &nfa, StateID state_id) {
   Closure closure;
@@ -29,7 +30,6 @@ Closure NFADeterminizer::epsilonClosure(const NFA &nfa,
                                         const Superstate &superstate) {
   Closure closure;
 
-  // Handle empty superstate
   if (superstate.empty()) {
     return closure;
   }
@@ -64,7 +64,45 @@ bool NFADeterminizer::containsAcceptingState(const NFA &nfa,
   return false;
 }
 
-DFA NFADeterminizer::determinize(const NFA &nfa) {
+// Picks the highest-priority (lowest declaration index) token type among all
+// accepting NFA states in the superstate. This correctly implements the
+// "first declaration wins" rule: e.g. RETURN beats IDENTIFIER when both
+// match, because RETURN was declared earlier by the user.
+//
+// Previously this iterated a Set<StateID> and returned the first accepting
+// state found — but set iteration order is by numeric ID, which reflects
+// internal NFA construction order, not user declaration order.
+String NFADeterminizer::resolveTokenType(
+    const NFA &nfa, const Superstate &superstate,
+    const UnorderedMap<String, int> &token_priority) {
+
+  String best_token;
+  int best_priority = INT_MAX;
+
+  for (StateID id : superstate) {
+    if (!nfa.isAccepting(id))
+      continue;
+
+    String token_type = nfa.getTokenType(id);
+    if (token_type.empty())
+      continue;
+
+    auto it = token_priority.find(token_type);
+    // If not found in priority map, treat as lowest priority (INT_MAX - 1)
+    // so it can still win over an empty token type.
+    int priority = (it != token_priority.end()) ? it->second : (INT_MAX - 1);
+
+    if (priority < best_priority) {
+      best_priority = priority;
+      best_token = token_type;
+    }
+  }
+
+  return best_token;
+}
+
+DFA NFADeterminizer::determinize(
+    const NFA &nfa, const UnorderedMap<String, int> &token_priority) {
   Superstate start_superstate = epsilonClosure(nfa, nfa.getStartStateID());
   Map<Superstate, StateID> superstate_to_state_id_map;
   Queue<Superstate> superstates_to_process;
@@ -78,13 +116,8 @@ DFA NFADeterminizer::determinize(const NFA &nfa) {
   superstates_to_process.push(start_superstate);
 
   if (containsAcceptingState(nfa, start_superstate)) {
-    // Find first accepting state in superstate to get token type
-    for (StateID id : start_superstate) {
-      if (nfa.isAccepting(id)) {
-        dfa_accepting_map[0] = nfa.getTokenType(id);
-        break;
-      }
-    }
+    dfa_accepting_map[0] =
+        resolveTokenType(nfa, start_superstate, token_priority);
   }
 
   const Alphabet alphabet = nfa.getAlphabet();
@@ -114,13 +147,8 @@ DFA NFADeterminizer::determinize(const NFA &nfa) {
         superstates_to_process.push(next_superstate);
 
         if (containsAcceptingState(nfa, next_superstate)) {
-          // Find first accepting state to get token type
-          for (StateID id : next_superstate) {
-            if (nfa.isAccepting(id)) {
-              dfa_accepting_map[new_id] = nfa.getTokenType(id);
-              break;
-            }
-          }
+          dfa_accepting_map[new_id] =
+              resolveTokenType(nfa, next_superstate, token_priority);
         }
 
         dfa.resizeTransitions(dfa_states.size());

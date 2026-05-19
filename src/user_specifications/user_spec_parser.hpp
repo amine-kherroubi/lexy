@@ -6,8 +6,12 @@
 
 /**
  * Syntax Grammar:
+ *
  * specifications ::= specification (NEWLINE specification)* END_OF_INPUT
  * specification ::= TOKEN_TYPE DEFINITION_SYMBOL REGEX
+ *
+ * Returns token definitions in declaration order. Order is significant:
+ * when two patterns match the same string, the one declared first wins.
  */
 class UserSpecParser {
 private:
@@ -21,5 +25,6 @@ public:
   UserSpecParser(UserSpecScanner &scanner)
       : scanner_(scanner), current_token_(scanner.getNextToken()) {}
 
-  Map<String, String> parse();
+  // Returns pairs in declaration order (not alphabetically sorted).
+  Vector<Pair<String, String>> parse();
 };

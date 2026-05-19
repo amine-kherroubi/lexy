@@ -11,13 +11,20 @@ void UserSpecParser::consume(UserSpecTokenType expected) {
   current_token_ = scanner_.getNextToken();
 }
 
-Map<String, String> UserSpecParser::parse() {
-  Map<String, String> specifications = {parse_specification()};
+// Returns specifications in declaration order. Using Vector<Pair> instead of
+// Map<String,String> (std::map) avoids silent alphabetical reordering, which
+// would break the "first match wins" priority rule for overlapping patterns
+// (e.g. IDENTIFIER vs RETURN: whichever is declared first should take priority
+// when both match, not whichever comes first alphabetically).
+Vector<Pair<String, String>> UserSpecParser::parse() {
+  Vector<Pair<String, String>> specifications;
+  specifications.push_back(parse_specification());
+
   while (current_token_.getType() == UserSpecTokenType::NEWLINE) {
     consume(UserSpecTokenType::NEWLINE);
     if (current_token_.getType() == UserSpecTokenType::END_OF_INPUT)
       break;
-    specifications.insert(parse_specification());
+    specifications.push_back(parse_specification());
   }
 
   return specifications;

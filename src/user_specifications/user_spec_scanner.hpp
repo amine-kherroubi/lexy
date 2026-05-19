@@ -5,11 +5,12 @@
 
 /**
  * Lexical Grammar:
- * TOKEN_TYPE ::= [A-Z_]+
+ *
+ * TOKEN_TYPE        ::= [A-Z_][A-Z_0-9]*
  * DEFINITION_SYMBOL ::= ::=
- * REGEX ::= "([^"\\]|\\.)*"
- * NEWLINE ::= \\n
- * END-OF-INPUT ::= \\0
+ * REGEX             ::= "([^"\\]|\\.)*"
+ * NEWLINE           ::= \n
+ * END-OF-INPUT      ::= \0
  */
 class UserSpecScanner {
 private:

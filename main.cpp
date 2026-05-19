@@ -75,12 +75,25 @@ int main(int argc, char *argv[]) {
 
   UserSpecScanner user_spec_scanner(specifications);
   UserSpecParser user_spec_parser(user_spec_scanner);
-  Map<String, String> user_token_types = user_spec_parser.parse();
+
+  // parse() now returns a Vector<Pair<String,String>> in declaration order.
+  // Declaration order determines priority: the first token type to appear in
+  // the spec wins when two patterns match the same string (e.g. RETURN beats
+  // IDENTIFIER). Using std::map here would silently reorder entries
+  // alphabetically, breaking that priority rule.
+  Vector<Pair<String, String>> user_token_types = user_spec_parser.parse();
 
   Vector<String> token_types;
   Vector<NFA> nfas;
 
-  for (const auto &[token_type, regex] : user_token_types) {
+  // Map each token type to its declaration index for use by the determinizer
+  // when it must break ties between multiple accepting NFA states.
+  UnorderedMap<String, int> token_priority;
+
+  for (Index i = 0; i < user_token_types.size(); i++) {
+    const auto &[token_type, regex] = user_token_types[i];
+    token_priority[token_type] = static_cast<int>(i);
+
     cout << "Processing token: " << token_type << endl;
     RegexScanner regex_scanner(regex);
     RegexParser regex_parser(regex_scanner);
@@ -91,7 +104,7 @@ int main(int argc, char *argv[]) {
   }
 
   NFA merged_nfa = ThompsonConstruction::mergeAll(nfas);
-  DFA dfa = NFADeterminizer::determinize(merged_nfa);
+  DFA dfa = NFADeterminizer::determinize(merged_nfa, token_priority);
   DFA minimized = DFAMinimizer::minimize(dfa);
 
   // Initialize output directory structure
