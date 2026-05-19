@@ -86,7 +86,7 @@ fn add(mut x: i32) -> i32 {
 
 After generating the scanner (`output/scanners/sample_scanner.cpp`), you can integrate it into your own C++ project.
 
-Here is a simple example program (`main.cpp`) to test the scanner:
+Here is a simple example program (`test.cpp`) to test the scanner:
 
 ```cpp
 #include <iostream>
@@ -126,11 +126,11 @@ int main() {
 
 ### Compiling and Running
 
-To compile your main program along with the generated scanner:
+To compile your test program along with the generated scanner:
 
 ```bash
-# Compile the main program
-g++ -std=c++20 main.cpp -o scanner_tester
+# Compile the test program
+g++ -std=c++20 test.cpp -o scanner_tester
 
 # Run the tester
 ./scanner_tester
