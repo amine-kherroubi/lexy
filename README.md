@@ -24,10 +24,9 @@ Lexy is only supported on **Linux**.
 ### From Source
 
 ```bash
-mkdir build && cd build
-cmake ..
-make
-sudo make install  # Installs the 'lexy' binary to /usr/local/bin
+cmake -B build
+cmake --build build
+sudo cmake --install build  # Installs the 'lexy' binary to /usr/local/bin
 ```
 
 Alternatively, you can run the `lexy` executable directly from the `build` directory.
@@ -35,7 +34,11 @@ Alternatively, you can run the `lexy` executable directly from the `build` direc
 ## Usage
 
 ```bash
+# Using installed binary
 lexy <input_spec.lexy> [options]
+
+# Using local build
+./build/lexy <input_spec.lexy> [options]
 ```
 
 **Options:**
@@ -46,40 +49,9 @@ lexy <input_spec.lexy> [options]
 
 ## Example
 
-**Input** (`scanner.lexy`):
-```lexy
-IDENTIFIER ::= "[a-zA-Z_][a-zA-Z0-9_]*"
-INTEGER    ::= "0|[1-9][0-9]*"
-```
+You can test `lexy` using the provided sample files in the `example` folder.
 
-**Run (with graph generation):**
-```bash
-lexy scanner.lexy -o ./build_scanner -g
-```
-
-This will generate:
-- `build_scanner/scanners/scanner.cpp` (The scanner code)
-- `build_scanner/images/` (Visualizations: `nfa.png`, `dfa.png`, `dfa_minimized.png`)
-
-## Testing
-
-The project includes a test suite to verify both the CLI generator and the generated scanners.
-
-### Running Tests
-
-```bash
-./tests/test.sh
-```
-
-This script will:
-1. Build the `lexy` executable.
-2. Run the generator on `tests/myScanner.lexy`.
-3. Verify the generation of scanner code and visualization files.
-4. Compile and run the generated scanner test (`tests/test_myScanner.cpp`), which reads `tests/sample_program.txt`.
-
-## Example
-
-**Input Specification** (`tests/myScanner.lexy`):
+**Input Specification** (`example/sample_scanner.lexy`):
 ```lexy
 FN         ::= "fn"
 LET        ::= "let"
@@ -101,7 +73,7 @@ PLUS       ::= "+"
 WHITESPACE ::= "[ \t\n]+"
 ```
 
-**Input Program** (`tests/sample_program.rs`):
+**Input Program** (`example/sample_program.rs`):
 ```rust
 fn add(mut x: i32) -> i32 {
     let y = 10;
@@ -110,11 +82,59 @@ fn add(mut x: i32) -> i32 {
 }
 ```
 
-This script will:
-1. Build the `lexy` executable.
-2. Run the generator on `examples/myScanner.lexy`.
-3. Verify the generation of scanner code and visualization files.
-4. Compile and run the generated scanner test (`tests/test_myScanner.cpp`).
+## Example Usage (Integrating the Scanner)
+
+After generating the scanner (`output/scanners/sample_scanner.cpp`), you can integrate it into your own C++ project.
+
+Here is a simple example program (`main.cpp`) to test the scanner:
+
+```cpp
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <sstream>
+#include "output/scanners/sample_scanner.cpp"
+
+int main() {
+    // Read the input program file
+    std::ifstream file("example/sample_program.rs");
+    if (!file.is_open()) {
+        std::cerr << "Failed to open input file." << std::endl;
+        return 1;
+    }
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    std::string content = buffer.str();
+
+    // Initialize scanner
+    Scanner scanner(content.c_str());
+
+    // Scan and print tokens
+    Token token;
+    while ((token = scanner.getNextToken()).type != -1) {
+        if (token.type == -2) {
+            std::cout << "Unknown token: " << token.lexeme << std::endl;
+        } else {
+            std::cout << "Token: " << TOKEN_NAMES[token.type]
+                      << " | Lexeme: '" << token.lexeme << "'" << std::endl;
+        }
+    }
+
+    return 0;
+}
+```
+
+### Compiling and Running
+
+To compile your main program along with the generated scanner:
+
+```bash
+# Compile the main program
+g++ -std=c++20 main.cpp -o scanner_tester
+
+# Run the tester
+./scanner_tester
+```
 
 ## References
 
