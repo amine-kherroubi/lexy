@@ -4,7 +4,7 @@ project(lexy VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Find Graphviz (optional, but encouraged for visualization)
+# Find Graphviz (optional)
 find_program(DOT_EXECUTABLE dot)
 if(DOT_EXECUTABLE)
     message(STATUS "Graphviz 'dot' found: ${DOT_EXECUTABLE}")
