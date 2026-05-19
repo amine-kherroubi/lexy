@@ -13,5 +13,5 @@ private:
   static String generateAcceptingStates(const DFA &,
                                         const UnorderedMap<String, int> &);
   static String generateTokenNames(const Vector<String> &);
-  static String generateScannerClass(const DFA &);
+  static String generateScannerClass(const DFA &, const Vector<String> &);
 };

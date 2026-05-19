@@ -33,7 +33,7 @@ void CodeGenerator::generateScanner(const DFA &dfa,
   out << generateTokenNames(token_types);
 
   // Write scanner class
-  out << generateScannerClass(dfa);
+  out << generateScannerClass(dfa, token_types);
 
   out.close();
   std::cout << "Generated scanner: " << output_filename << std::endl;
@@ -113,7 +113,8 @@ String CodeGenerator::generateTokenNames(const Vector<String> &token_types) {
   return string_stream.str();
 }
 
-String CodeGenerator::generateScannerClass(const DFA &dfa) {
+String CodeGenerator::generateScannerClass(const DFA &dfa,
+                                           const Vector<String> &token_types) {
   StringStream string_stream;
   StateID start_state = dfa.getStartStateID();
 
@@ -135,43 +136,57 @@ String CodeGenerator::generateScannerClass(const DFA &dfa) {
   string_stream << "    }\n\n";
 
   string_stream << "    Token getNextToken() {\n";
-  string_stream << "        if (position >= length) {\n";
-  string_stream << "            return {-1, \"\"};\n";
-  string_stream << "        }\n\n";
-
-  string_stream << "        int current_state = " << start_state << ";\n";
-  string_stream << "        size_t start_pos = position;\n";
-  string_stream << "        int last_accepting_state = -1;\n";
-  string_stream << "        size_t last_accepting_pos = position;\n\n";
-
   string_stream << "        while (position < length) {\n";
-  string_stream << "            char c = input[position];\n";
-  string_stream << "            int next_state = "
+  string_stream << "            size_t start_pos = position;\n";
+  string_stream << "            int current_state = " << start_state << ";\n";
+  string_stream << "            int last_accepting_state = -1;\n";
+  string_stream << "            size_t last_accepting_pos = position;\n\n";
+
+  string_stream << "            while (position < length) {\n";
+  string_stream << "                char c = input[position];\n";
+  string_stream << "                int next_state = "
                    "TRANSITION_TABLE[current_state][(int)c];\n\n";
 
-  string_stream << "            if (next_state == -1) break;\n\n";
+  string_stream << "                if (next_state == -1) break;\n\n";
 
-  string_stream << "            current_state = next_state;\n";
-  string_stream << "            position++;\n\n";
+  string_stream << "                current_state = next_state;\n";
+  string_stream << "                position++;\n\n";
 
-  string_stream << "            if (ACCEPTING_STATES[current_state] != -1) {\n";
-  string_stream << "                last_accepting_state = current_state;\n";
-  string_stream << "                last_accepting_pos = position;\n";
-  string_stream << "            }\n";
-  string_stream << "        }\n\n";
-
-  string_stream << "        if (last_accepting_state != -1) {\n";
-  string_stream << "            position = last_accepting_pos;\n";
   string_stream
-      << "            std::string lexeme(input + start_pos, last_accepting_pos "
-         "- start_pos);\n";
-  string_stream << "            int token_type = "
-                   "ACCEPTING_STATES[last_accepting_state];\n";
-  string_stream << "            return {token_type, lexeme};\n";
-  string_stream << "        }\n\n";
+      << "                if (ACCEPTING_STATES[current_state] != -1) {\n";
+  string_stream
+      << "                    last_accepting_state = current_state;\n";
+  string_stream << "                    last_accepting_pos = position;\n";
+  string_stream << "                }\n";
+  string_stream << "            }\n\n";
 
-  string_stream << "        position = start_pos + 1;\n";
-  string_stream << "        return {-2, std::string(1, input[start_pos])};\n";
+  string_stream << "            if (last_accepting_state != -1) {\n";
+  string_stream << "                position = last_accepting_pos;\n";
+  string_stream << "                int token_type = "
+                   "ACCEPTING_STATES[last_accepting_state];\n";
+
+  // Logic to skip whitespace if WHITESPACE token type is defined
+  string_stream << "                // If this is WHITESPACE, continue "
+                   "scanning (ignore it)\n";
+  string_stream << "                bool is_whitespace = false;\n";
+  for (Index i = 0; i < token_types.size(); i++) {
+    if (token_types[i] == "WHITESPACE") {
+      string_stream << "                if (token_type == " << i
+                    << ") { is_whitespace = true; }\n";
+    }
+  }
+  string_stream << "                if (is_whitespace) continue;\n\n";
+
+  string_stream << "                std::string lexeme(input + start_pos, "
+                   "last_accepting_pos - start_pos);\n";
+  string_stream << "                return {token_type, lexeme};\n";
+  string_stream << "            }\n\n";
+
+  string_stream << "            position = start_pos + 1;\n";
+  string_stream
+      << "            return {-2, std::string(1, input[start_pos])};\n";
+  string_stream << "        }\n";
+  string_stream << "        return {-1, \"\"};\n";
   string_stream << "    }\n";
   string_stream << "};\n";
 
