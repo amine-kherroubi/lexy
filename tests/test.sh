@@ -6,7 +6,7 @@ cd "$(dirname "$0")/.."
 # Build project
 mkdir -p build && cd build && cmake .. && make && cd ..
 
-# 1. Test CLI functionality
+# Test CLI functionality
 mkdir -p build/test_output
 ./build/lexy tests/myScanner.lexy -o ./build/test_output -g
 if [ -f "./build/test_output/scanners/myScanner.cpp" ] && [ -f "./build/test_output/images/nfa.png" ]; then
@@ -16,7 +16,7 @@ else
     exit 1
 fi
 
-# 2. Test Generated Scanner
+# Test Generated Scanner
 # Copy generated scanner to the location expected by the test
 mkdir -p build/scanners
 cp build/test_output/scanners/myScanner.cpp build/scanners/

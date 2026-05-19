@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
   DFA dfa = NFADeterminizer::determinize(merged_nfa);
   DFA minimized = DFAMinimizer::minimize(dfa);
 
-  // Setup output structure
+  // Initialize output directory structure
   fs::path out_path(output_dir);
   fs::path scanner_path = out_path / "scanners";
   fs::create_directories(scanner_path);
@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
                                      (graphviz_path / "dfa_minimized").string(),
                                      (images_path / "dfa_minimized").string());
 
-    fs::remove_all(graphviz_path); // Cleanup temporary graphviz directory
+    fs::remove_all(graphviz_path); // Remove temporary graphviz directory
 #else
     cout << "Warning: Graph generation requested but Graphviz (dot) not "
             "found.\n";

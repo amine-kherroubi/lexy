@@ -71,21 +71,40 @@ This script will:
 1. Build the `lexy` executable.
 2. Run the generator on `tests/myScanner.lexy`.
 3. Verify the generation of scanner code and visualization files.
-4. Compile and run the generated scanner test (`tests/test_myScanner.cpp`).
+4. Compile and run the generated scanner test (`tests/test_myScanner.cpp`), which reads `tests/sample_program.txt`.
 
 ## Example
 
-**Input** (`tests/myScanner.lexy`):
+**Input Specification** (`tests/myScanner.lexy`):
 ```lexy
+FN         ::= "fn"
+LET        ::= "let"
+MUT        ::= "mut"
+PRINT      ::= "println!"
+I32        ::= "i32"
+RETURN     ::= "return"
+ARROW      ::= "->"
 IDENTIFIER ::= "[a-zA-Z_][a-zA-Z0-9_]*"
-INTEGER    ::= "0|[1-9][0-9]*"
+INTEGER    ::= "[0-9]+"
+ASSIGN     ::= "="
+SEMICOLON  ::= ";"
+LBRACE     ::= "{"
+RBRACE     ::= "}"
+LPAREN     ::= "("
+RPAREN     ::= ")"
+COLON      ::= ":"
+PLUS       ::= "+"
+WHITESPACE ::= "[ \t\n]+"
 ```
 
-**Run (with graph generation):**
-```bash
-lexy tests/myScanner.lexy -o ./build_scanner -g
+**Input Program** (`tests/sample_program.rs`):
+```rust
+fn add(mut x: i32) -> i32 {
+    let y = 10;
+    println!("Result");
+    return x + y;
+}
 ```
-
 
 This script will:
 1. Build the `lexy` executable.
