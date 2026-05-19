@@ -28,35 +28,37 @@ The generated scanners use a 2D array `TRANSITION_TABLE[state][char] -> next_sta
 
 ## Build & Run
 
+### Prerequisites
+- C++20 compatible compiler (e.g., `clang++`)
+- `make`
+- Graphviz (`dot` command for visualization)
+
+### Building the Generator
 ```bash
-make                                   # Build generator
-./scanner_generator.exe input.lexy     # Generate scanner
+make
 ```
 
-Requires C++20.
-
-## Example
-
-**Input** (`examples/myScanner.lexy`):
-```
-IDENTIFIER ::= "[a-zA-Z_][a-zA-Z0-9_]*"
-INTEGER ::= "0|[1-9][0-9]*"
-```
-
-**Generate:**
+### Generating a Scanner
 ```bash
-./scanner_generator.exe examples/myScanner.lexy
+./scanner_generator.exe <path_to_spec.lexy>
+```
+The generated scanner will be located in `generated/scanners/`, and visual representations of the constructed automata (NFA, DFA, and Minimized DFA) will be generated in `generated/images/`.
+
+## Testing
+
+To verify the correct functionality of the scanner generator and the generated code, execute the following command:
+
+```bash
+make test
 ```
 
-**Output:** `generated/scanners/myScanner.cpp`
+This command automatically performs the following steps:
+1. Rebuilds the generator if necessary.
+2. Generates the scanner based on the example specification (`examples/myScanner.lexy`).
+3. Compiles the test program (`examples/test_myScanner.cpp`).
+4. Executes the test suite and validates output against expected token sequences.
 
-**Test:**
-```cpp
-Scanner scanner("hello123");
-Token t1 = scanner.getNextToken();  // IDENTIFIER: "hello"
-Token t2 = scanner.getNextToken();  // INTEGER: "123"
-Token t3 = scanner.getNextToken();  // EOF
-```
+Successful execution will indicate `12/12 passed` for the provided test cases.
 
 ## Limitations
 

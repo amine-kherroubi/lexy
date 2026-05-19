@@ -10,6 +10,7 @@
 #include "src/regex/regex_scanner.hpp"
 #include "src/user_specifications/user_spec_parser.hpp"
 #include "src/user_specifications/user_spec_scanner.hpp"
+#include "src/visualization/automata_visualizer.hpp"
 #include <iostream>
 
 using namespace std;
@@ -74,10 +75,21 @@ int main(int argc, char *argv[]) {
   // Ensure generated directory exists
   createDirectory("generated");
   createDirectory("generated/scanners");
+  createDirectory("generated/graphviz");
+  createDirectory("generated/images");
 
   // Output file path
   String base_name = getBaseName(input_filename);
   String output_filename = "generated/scanners/" + base_name + ".cpp";
+
+  // Visualize
+  AutomataVisualizer::visualizeNFA(merged_nfa, "generated/graphviz/nfa",
+                                   "generated/images/nfa");
+  AutomataVisualizer::visualizeDFA(dfa, "generated/graphviz/dfa",
+                                   "generated/images/dfa");
+  AutomataVisualizer::visualizeDFA(minimized,
+                                   "generated/graphviz/dfa_minimized",
+                                   "generated/images/dfa_minimized");
 
   cout << "\nGenerating scanner code to: " << output_filename << endl;
   CodeGenerator::generateScanner(minimized, token_types, output_filename);

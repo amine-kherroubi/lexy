@@ -1,5 +1,6 @@
-CXX = g++
-CXXFLAGS = -std=c++20 -Wall -Wextra -Isrc
+CXX = clang++
+CXXFLAGS = -std=c++20 -Wall -Wextra -Isrc -I/usr/include/c++/13 -I/usr/include/x86_64-linux-gnu/c++/13
+LDFLAGS = -L/usr/lib/gcc/x86_64-linux-gnu/13
 
 # Source files
 SRCS = main.cpp \
@@ -31,7 +32,7 @@ all: $(TARGET)
 
 # Link main executable
 $(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
 	@echo "✓ Build complete: $(TARGET)"
 
 # Compile source files
@@ -41,7 +42,7 @@ $(BUILD_DIR)/%.o: %.cpp
 
 # Build test scanner
 $(TEST_TARGET): examples/test_myScanner.cpp generated/scanners/myScanner.cpp
-	$(CXX) $(CXXFLAGS) -o $@ examples/test_myScanner.cpp
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ examples/test_myScanner.cpp
 	@echo "✓ Test built: $(TEST_TARGET)"
 
 # Clean build artifacts
