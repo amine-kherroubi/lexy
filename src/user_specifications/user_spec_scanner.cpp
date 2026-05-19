@@ -70,7 +70,7 @@ UserSpecToken UserSpecScanner::getNextToken() {
     current = advance();
   }
 
-  if (isAtEnd())
+  if (current == '\0')
     return {UserSpecTokenType::END_OF_INPUT, ""};
 
   if (current == '\n')

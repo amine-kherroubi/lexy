@@ -17,7 +17,7 @@ void RegexASTToNFA::setTokenType(NFA &nfa, const String &token_type) {
 
   // Update all accepting states to have the correct token type
   for (auto &[state_id, current_token] : accepting_map) {
-    accepting_map[state_id] = token_type;
+    current_token = token_type;
   }
 }
 

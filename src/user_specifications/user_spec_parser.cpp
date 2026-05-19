@@ -11,8 +11,8 @@ void UserSpecParser::consume(UserSpecTokenType expected) {
   current_token_ = scanner_.getNextToken();
 }
 
-UnorderedMap<String, String> UserSpecParser::parse() {
-  UnorderedMap<String, String> specifications = {parse_specification()};
+Map<String, String> UserSpecParser::parse() {
+  Map<String, String> specifications = {parse_specification()};
   while (current_token_.getType() == UserSpecTokenType::NEWLINE) {
     consume(UserSpecTokenType::NEWLINE);
     if (current_token_.getType() == UserSpecTokenType::END_OF_INPUT)

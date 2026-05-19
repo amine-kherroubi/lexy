@@ -30,7 +30,7 @@ DFA DFAMinimizer::minimize(const DFA &dfa) {
   // Only include reachable states
   Vector<Superstate> partitions;
   Superstate nonaccepting_partition;
-  Superstate accepting_partition;
+  Map<String, Superstate> accepting_partitions;
 
   for (const State &state : dfa.getStates()) {
     StateID id = state.getID();
@@ -40,7 +40,7 @@ DFA DFAMinimizer::minimize(const DFA &dfa) {
     }
 
     if (dfa.isAccepting(id)) {
-      accepting_partition.insert(id);
+      accepting_partitions[dfa.getTokenType(id)].insert(id);
     } else {
       nonaccepting_partition.insert(id);
     }
@@ -49,8 +49,8 @@ DFA DFAMinimizer::minimize(const DFA &dfa) {
   if (!nonaccepting_partition.empty()) {
     partitions.push_back(nonaccepting_partition);
   }
-  if (!accepting_partition.empty()) {
-    partitions.push_back(accepting_partition);
+  for (auto const &[token_type, partition] : accepting_partitions) {
+    partitions.push_back(partition);
   }
 
   // Refine partitions until no more splits occur

@@ -145,7 +145,7 @@ String CodeGenerator::generateScannerClass(const DFA &dfa,
   string_stream << "            while (position < length) {\n";
   string_stream << "                char c = input[position];\n";
   string_stream << "                int next_state = "
-                   "TRANSITION_TABLE[current_state][(int)c];\n\n";
+                   "TRANSITION_TABLE[current_state][(unsigned char)c];\n\n";
 
   string_stream << "                if (next_state == -1) break;\n\n";
 

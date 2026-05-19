@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 
   UserSpecScanner user_spec_scanner(specifications);
   UserSpecParser user_spec_parser(user_spec_scanner);
-  UnorderedMap<String, String> user_token_types = user_spec_parser.parse();
+  Map<String, String> user_token_types = user_spec_parser.parse();
 
   Vector<String> token_types;
   Vector<NFA> nfas;

@@ -9,6 +9,10 @@ Lexy is a professional-grade lexical analyzer generator that compiles regular ex
 - **Automata Visualization**: Optional generation of visual representations (Graphviz) of NFA and DFA construction stages.
 - **Header-Driven**: Designed for integration into larger compiler projects.
 
+## Supported Platforms
+
+Lexy is only supported on **Linux**.
+
 ## Prerequisites
 
 - C++20 compatible compiler (e.g., `g++` or `clang++`)
