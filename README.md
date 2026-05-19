@@ -42,7 +42,7 @@ lexy <input_spec.lexy> [options]
 ```
 
 **Options:**
-- `<input_spec.lexy>`: Input specification file (required).
+- `<input_spec.lexy>`: Input specification file (required). Note: Special regex characters (e.g., `+`, `{`, `}`, `(`, `)`, `!`, `->`) must be escaped with a backslash (e.g., `"\+"`) in the specification file.
 - `-o <dir>`: Output directory for scanner code and visualizations (default: `./output`).
 - `-g`: Enable automata graph generation (disabled by default).
 - `-h`: Show help message.
@@ -56,20 +56,20 @@ You can test `lexy` using the provided sample files in the `example` folder.
 FN         ::= "fn"
 LET        ::= "let"
 MUT        ::= "mut"
-PRINT      ::= "println!"
+PRINT      ::= "println\!"
 I32        ::= "i32"
 RETURN     ::= "return"
-ARROW      ::= "->"
+ARROW      ::= "\->"
 IDENTIFIER ::= "[a-zA-Z_][a-zA-Z0-9_]*"
 INTEGER    ::= "[0-9]+"
 ASSIGN     ::= "="
 SEMICOLON  ::= ";"
-LBRACE     ::= "{"
-RBRACE     ::= "}"
-LPAREN     ::= "("
-RPAREN     ::= ")"
+LBRACE     ::= "\{"
+RBRACE     ::= "\}"
+LPAREN     ::= "\("
+RPAREN     ::= "\)"
 COLON      ::= ":"
-PLUS       ::= "+"
+PLUS       ::= "\+"
 WHITESPACE ::= "[ \t\n]+"
 ```
 

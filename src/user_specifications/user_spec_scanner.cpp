@@ -23,7 +23,7 @@ UserSpecToken UserSpecScanner::scanUserTokenType() {
 
   while (!isAtEnd()) {
     char next = peek();
-    if (std::isupper(static_cast<unsigned char>(next)) || next == '_') {
+    if (std::isupper(static_cast<unsigned char>(next)) || next == '_' || std::isdigit(static_cast<unsigned char>(next))) {
       token_type.push_back(advance());
     } else {
       break;
