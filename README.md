@@ -5,7 +5,7 @@
 ![Platform](https://img.shields.io/badge/Platform-Linux-FCC624?style=flat&logo=linux&logoColor=black)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-Lexy is a professional-grade lexical analyzer generator that compiles regular expression specifications into efficient, table-driven C++ scanners.
+Lexy is a lexical analyzer generator that compiles regular expression specifications (`.lexy` files) into efficient, table-driven C++ scanners.
 
 ## Features
 - **Standardized Build System**: Uses CMake for cross-platform portability.
