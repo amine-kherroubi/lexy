@@ -1,7 +1,6 @@
 # Lexy
 
 ![C++](https://img.shields.io/badge/C%2B%2B-20-00599C?style=flat&logo=c%2B%2B&logoColor=white)
-![CMake](https://img.shields.io/badge/CMake-%3E%3D3.10-064F8C?style=flat&logo=cmake)
 ![Platform](https://img.shields.io/badge/Platform-Linux-FCC624?style=flat&logo=linux&logoColor=black)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
