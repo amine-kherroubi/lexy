@@ -11,7 +11,6 @@ Lexy is a lexical analyzer generator that compiles regular expression specificat
 - **Standardized Build System**: Uses CMake for cross-platform portability.
 - **Professional CLI**: Flexible input/output configuration via command-line arguments.
 - **Automata Visualization**: Optional generation of visual representations (Graphviz) of NFA and DFA construction stages.
-- **Header-Driven**: Designed for integration into larger compiler projects.
 
 ## Supported Platforms
 Lexy is only supported on **Linux**.
